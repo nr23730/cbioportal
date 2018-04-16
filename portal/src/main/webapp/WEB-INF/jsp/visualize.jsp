@@ -205,6 +205,9 @@ window.loadReactApp({ defaultRoute: 'results' });
             if (showCoexpTab) {
                 out.println ("<li><a href='#coexp' class='result-tab' id='coexp-result-tab'>Co-Expression</a></li>");
             }
+            if (showMutpatTab) {
+                out.println ("<li><a href='#mutpat' class='result-tab' id='mutpat-result-tab'>Mutation Patterns</a></li>");
+            }
             if ((has_mrna || has_copy_no || showMutTab && showEnrichmentsTab) && !isVirtualStudy) {
                 out.println("<li><a href='#enrichementTabDiv' id='enrichments-result-tab' class='result-tab'>Enrichments</a></li>");
             }
@@ -296,6 +299,10 @@ window.loadReactApp({ defaultRoute: 'results' });
 
             <% if (showCoexpTab) { %>
         <%@ include file="co_expression.jsp" %>
+            <% } %>
+
+            <% if (showMutpatTab) { %>
+        <%@ include file="mutation_patterns.jsp" %>
             <% } %>
 
             <% if ((has_mrna || has_copy_no || showMutTab) && !isVirtualStudy) { %>

@@ -591,6 +591,15 @@
         <servlet-name>GetCoExpJson</servlet-name>
         <url-pattern>/getCoExp.do</url-pattern>
     </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>GetMutPatJson</servlet-name>
+        <servlet-class>org.mskcc.cbio.portal.servlet.GetMutationPatternsJSON</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GetMutPatJson</servlet-name>
+        <url-pattern>/getMutPat.do</url-pattern>
+    </servlet-mapping>
 
     <servlet>
         <servlet-name>getAlterationData</servlet-name>

@@ -74,6 +74,8 @@
     boolean computeLogOddsRatio = true;
     Boolean mutationDetailLimitReached = (Boolean)request.getAttribute(QueryBuilder.MUTATION_DETAIL_LIMIT_REACHED);
     boolean showCoexpTab = false;
+    boolean showMutpatTab = true;
+    
 
     //are we using session service for bookmarking?
     boolean useSessionServiceBookmark = !StringUtils.isBlank(GlobalProperties.getSessionServiceUrl());
