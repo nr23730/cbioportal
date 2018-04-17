@@ -443,6 +443,15 @@ window.loadReactApp({ defaultRoute: 'results' });
                 position: {my:'left top',at:'right bottom', viewport: $(window)}
             }
         );
+        $("#mutpat-result-tab").qtip(
+            {
+                content: {text: "Alteration Patterns in groups of varying expression levels."},
+                style: { classes: 'qtip-light qtip-rounded qtip-shadow qtip-lightyellow result-tab-qtip-content' },
+                show: {event: "mouseover", delay: 0},
+                hide: {fixed:true, delay: 100, event: "mouseout"},
+                position: {my:'left top',at:'right bottom', viewport: $(window)}
+            }
+        );
         $("#enrichments-result-tab").qtip(
             {
                 content: {text: "This analysis finds alterations " +

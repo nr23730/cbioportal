@@ -148,13 +148,13 @@ var MutPatView = (function() {
                     if (typeof(element) !== 'undefined' && element !== null) { 
                         element.parentNode.removeChild(element); //destroy all the existing instances
                     }
-                    element =  document.getElementById(Prefix.plotPrefix + cbio.util.safeProperty(value));
-                    if (typeof(element) !== 'undefined' && element !== null) { 
-                        element.parentNode.removeChild(element); //destroy all the existing instances
-                    }   
+                    // element =  document.getElementById(Prefix.plotPrefix + cbio.util.safeProperty(value));
+                    // if (typeof(element) !== 'undefined' && element !== null) { 
+                    //     element.parentNode.removeChild(element); //destroy all the existing instances
+                    // }   
                     //Empty all the sub divs
                     $("#" + Prefix.tableDivPrefix + cbio.util.safeProperty(value)).empty();
-                    $("#" + Prefix.plotsPreFix + cbio.util.safeProperty(value)).empty();
+                    // $("#" + Prefix.plotsPreFix + cbio.util.safeProperty(value)).empty();
                     $("#" + Prefix.loadingImgPrefix + cbio.util.safeProperty(value)).empty();
                     //Add back loading imgs
                     $("#" + Prefix.loadingImgPrefix + cbio.util.safeProperty(value)).append(
@@ -201,17 +201,16 @@ var MutPatView = (function() {
                 $("#" + Names.tableId).append(
                     "<thead style='font-size:70%;' >" +
                     "<tr>" + 
-                    "<th>Correlated Gene</th>" +
-                    "<th>Cytoband</th>" + 
-                    "<th>Pearson's Correlation</th>" +
-                    "<th>Spearman's Correlation</th>" +
+                    "<th>Pattern</th>" +
+                    "<th>Magnitude</th>" +
+                    "<th>Support</th>" +
                     "</tr>" +
                     "</thead><tbody></tbody>"
                 );
 
                 //Configure the datatable with  jquery
                 mutPatTableInstance = $("#" + Names.tableId).dataTable({
-                    "sDom": '<"H"f<"mutpat-table-filter-pearson">>t<"F"i<"datatable-paging"p>>',
+                    "sDom": '<"H"f<"mutpat-table-filter-magnitude">>t<"F"i<"datatable-paging"p>>',
                     "bPaginate": true,
                     "sPaginationType": "two_button",
                     "bInfo": true,
@@ -226,22 +225,23 @@ var MutPatView = (function() {
                             "sWidth": "56%"
                         },
                         {
-                            "bSearchable": true,
+                            "sType": 'mutpat-absolute-value',
+                            "bSearchable": false,
                             "aTargets": [ 1 ],
                             "sWidth": "22%"
                         },
-                        {
-                            "sType": 'mutpat-absolute-value',
-                            //TODO: should be disabled; this is just a quick fix, otherwise the fnfilter would work on this column
-                            //"bSearchable": false, 
-                            "bSearchable": true, 
-                            "aTargets": [ 2 ],
-                            "sWidth": "22%"
-                        },
+                        // {
+                        //     "sType": 'mutpat-absolute-value',
+                        //     //TODO: should be disabled; this is just a quick fix, otherwise the fnfilter would work on this column
+                        //     //"bSearchable": false, 
+                        //     "bSearchable": true, 
+                        //     "aTargets": [ 2 ],
+                        //     "sWidth": "22%"
+                        // },
                         {
                             "sType": 'mutpat-absolute-value',
                             "bSearchable": false,
-                            "aTargets": [ 3 ],
+                            "aTargets": [ 2 ],
                             "sWidth": "22%"
                         }
                     ],
@@ -255,16 +255,12 @@ var MutPatView = (function() {
                     "iDisplayLength": 30,
                     "fnRowCallback": function(nRow, aData) {
                         $('td:eq(0)', nRow).css("font-weight", "bold");
+                        $('td:eq(1)', nRow).css("font-weight", "bold");
                         $('td:eq(2)', nRow).css("font-weight", "bold");
-                        if (aData[2] > 0) {
+                        if (aData[2] > 0.5) {
                             $('td:eq(2)', nRow).css("color", "#3B7C3B");
                         } else {
                             $('td:eq(2)', nRow).css("color", "#B40404");
-                        }
-                        if (aData[3] > 0) {
-                            $('td:eq(3)', nRow).css("color", "#3B7C3B");
-                        } else {
-                            $('td:eq(3)', nRow).css("color", "#B40404");
                         }
                     },
                     "fnInfoCallback": function( oSettings, iStart, iEnd, iMax, iTotal, sPre ) {
@@ -290,21 +286,21 @@ var MutPatView = (function() {
                 $("#" + Names.tableDivId).append(downloadFullResultForm);            
             }
 
-            function attachPearsonFilter() { 
-                //Add drop down filter for positive/negative pearson display
-                $("#" + Names.tableDivId).find('.mutpat-table-filter-pearson').append(
+            function attachMagnitudeFilter() { 
+                //Add drop down filter for single/all pattern display
+                $("#" + Names.tableDivId).find('.mutpat-table-filter-magnitude').append(
                     "<select id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "' style='width: 230px; margin-left: 5px;'>" +
                     "<option value='all'>Show All</option>" +
-                    "<option value='positivePearson'>Show Only Positively Correlated</option>" +
-                    "<option value='negativePearson'>Show Only Negatively Correlated</option>" +
+                    "<option value='singleMagnitude'>Show Only Single Genes</option>" +
+                    "<option value='multipleMagnitude'>Show Only Gene Patterns</option>" +
                     "</select>");
                 $("select#mutpat-table-select-" + cbio.util.safeProperty(geneId)).change(function () {
-                    if ($(this).val() === "negativePearson") {
-                        mutPatTableInstance.fnFilter("-", 2, false);
-                    } else if ($(this).val() === "positivePearson") {
-                        mutPatTableInstance.fnFilter('^[0-9]*\.[0-9]*$', 2, true);
+                    if ($(this).val() === "singleMagnitude") {
+                        mutPatTableInstance.fnFilter("1", 1, false);
+                    } else if ($(this).val() === "multipleMagnitude") {
+                        mutPatTableInstance.fnFilter('^(?!1$).*$', 1, true);
                     } else if ($(this).val() === "all") {
-                        mutPatTableInstance.fnFilter("", 2);
+                        mutPatTableInstance.fnFilter("", 1);
                     }
                 });
             }
@@ -318,12 +314,12 @@ var MutPatView = (function() {
                     $(event.target.parentNode).addClass('row_selected');
                     //Get the gene name of the selected row
                     var aData = mutPatTableInstance.fnGetData(this);
-                    if (null !== aData) {
-                        $("#" + Names.plotId).empty();
-                        $("#" + Names.plotId).append("<img style='padding:220px;' src='images/ajax-loader.gif' alt='loading' />");
-                        var mutpatPlots = new MutpatPlots();
-                        mutpatPlots.init(Names.plotId, geneId, aData[0], aData[2], aData[3], $("#mutpat-profile-selector :selected").val());
-                    }
+                    // if (null !== aData) {
+                    //     $("#" + Names.plotId).empty();
+                    //     $("#" + Names.plotId).append("<img style='padding:220px;' src='images/ajax-loader.gif' alt='loading' />");
+                    //     var mutpatPlots = new MutpatPlots();
+                    //     mutpatPlots.init(Names.plotId, geneId, aData[0], aData[2], aData[3], $("#mutpat-profile-selector :selected").val());
+                    // }
                 });
             }
 
@@ -350,21 +346,28 @@ var MutPatView = (function() {
             function convertData(_result) {
                 //Convert the format of the callback result to fit datatable
                 mutpatTableArr = [];
-                $.each(_result, function(i, obj) {
-                    var tmp_arr = [];
-                    tmp_arr.push(obj.gene);
-                    tmp_arr.push(obj.cytoband);
-                    tmp_arr.push(obj.pearson.toFixed(2));
-                    tmp_arr.push(obj.spearman.toFixed(2));
-                    mutpatTableArr.push(tmp_arr);
-                });           
+                // $.each(_result, function(i, obj) {
+                //     var tmp_arr = [];
+                //     tmp_arr.push(obj.gene);
+                //     tmp_arr.push(obj.cytoband);
+                //     tmp_arr.push(obj.pearson.toFixed(2));
+                //     tmp_arr.push(obj.spearman.toFixed(2));
+                //     mutpatTableArr.push(tmp_arr);
+                // });   
+                // Dummy Data for Mockup
+                mutpatTableArr.push(["TP53, TTN", 2, 0.52]);
+                mutpatTableArr.push(["CSMD3, TTN", 2, 0.30]);
+                mutpatTableArr.push(["NCOA3, TTN", 2, 0.24]);
+                mutpatTableArr.push(["TTN", 1, 0.74]);
+                mutpatTableArr.push(["TP53", 1, 0.76]);
+                mutpatTableArr.push(["PDE4DIP, TP53, TTN", 3, 0.22]);
             }
 
             function getMutPatDataCallBack(result, geneId) {
                 //Hide the loading img
                 $("#" + Names.loadingImgId).empty();
                 if (result.length === 0) {
-                    $("#" + Names.tableDivId).append("There are no gene pairs with a Pearson or Spearman score > 0.3 or < -0.3. To see the scores for all gene pairs, use the button below.");
+                    $("#" + Names.tableDivId).append("There are no alteration patterns with an support of ?? or higher.");
                     attachDownloadFullResultButton();                    
                 } else {
                     //Render datatable
@@ -372,7 +375,7 @@ var MutPatView = (function() {
                     overWriteFilters(); 
                     configTable();
                     attachDownloadFullResultButton();
-                    attachPearsonFilter();
+                    attachMagnitudeFilter();
                     attachRowListener();
                     initTable();                    
                 }
@@ -381,7 +384,7 @@ var MutPatView = (function() {
             return {
                 init: function(_geneId) {
                     //Getting co-exp data (for currently selected gene/profile) from servlet
-                    $("#" + Names.plotId).empty();
+                    // $("#" + Names.plotId).empty();
                     var paramsGetMutPatData = {
                          cancer_study_id: window.QuerySession.getCancerStudyIds()[0],
                          gene: _geneId,
@@ -410,7 +413,7 @@ var MutPatView = (function() {
             Names.loadingImgId = Prefix.loadingImgPrefix + safeGeneId;
             Names.tableId = Prefix.tablePrefix + safeGeneId + jQuery.now();
             Names.tableDivId = Prefix.tableDivPrefix + safeGeneId;
-            Names.plotId = Prefix.plotPrefix + safeGeneId;
+            // Names.plotId = Prefix.plotPrefix + safeGeneId;
         }
 
         function drawLayout() {
@@ -420,12 +423,12 @@ var MutPatView = (function() {
                 "<tr>" +
                 "<td width='" + dim.mutpat_table_width + "' valign='top'>" + 
                 "<div id='" + Names.tableDivId + "'></div></td>" +
-                "<td width='" + dim.mutpat_plots_width + "' valign='top'>" + 
-                "<div id='" + Names.plotId + "'></div></td>" +
+                // "<td width='" + dim.mutpat_plots_width + "' valign='top'>" + 
+                // "<div id='" + Names.plotId + "'></div></td>" +
                 "</tr>" +
                 "</table>");
             $("#" + Names.tableDivId).addClass("mutpat-table");
-            $("#" + Names.tableDivId).addClass("mutpat-plots");
+            // $("#" + Names.tableDivId).addClass("mutpat-plots");
             $("#" + Names.tableDivId).append(
                 "<table id='" + Names.tableId + "' class='display mutpat_datatable_" + geneId + "' cellpadding='0' cellspacing='0' border='0'></table>");
         }

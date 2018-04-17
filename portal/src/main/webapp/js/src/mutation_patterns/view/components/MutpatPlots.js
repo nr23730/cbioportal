@@ -99,15 +99,15 @@ var MutpatPlots = function() {
     function getMutationDataCallBack(_alteration_data_result, _divName, _geneX, _geneY, _pearson, _spearman) {
         return function(result) {
             MutpatPlotsProxy.init(_alteration_data_result, _geneX, _geneY, _pearson, _spearman);
-            var coexpPlotsView = new MutpatPlotsView();
-            coexpPlotsView.init(_divName, _geneX, _geneY, MutpatPlotsProxy.getData(), MutpatPlotsProxy.getDataAttr());
+            var mutpatPlotsView = new MutpatPlotsView();
+            mutpatPlotsView.init(_divName, _geneX, _geneY, MutpatPlotsProxy.getData(), MutpatPlotsProxy.getDataAttr());
         };
     }
     
     function pseudo_callback(_alteration_data_result, _divName, _geneX, _geneY, _pearson, _spearman) {
         MutpatPlotsProxy.init(_alteration_data_result, _geneX, _geneY, _pearson, _spearman);
-        var coexpPlotsView = new MutpatPlotsView();
-        coexpPlotsView.init(_divName, _geneX, _geneY, MutpatPlotsProxy.getData(), MutpatPlotsProxy.getDataAttr());
+        var mutpatPlotsView = new MutpatPlotsView();
+        mutpatPlotsView.init(_divName, _geneX, _geneY, MutpatPlotsProxy.getData(), MutpatPlotsProxy.getDataAttr());
     }
 
     return {
