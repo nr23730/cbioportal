@@ -108,13 +108,13 @@ var MutPatView = (function() {
         function filterProfiles(_profileList) {
             $.each(_profileList, function(i, obj) {
                 if (obj["GENETIC_ALTERATION_TYPE"] === "MRNA_EXPRESSION" || obj["GENETIC_ALTERATION_TYPE"] === "PROTEIN_LEVEL") {
-                    if (obj["STABLE_ID"].toLowerCase().indexOf("zscores") !== -1) {
-                        if (obj["STABLE_ID"].toLowerCase().indexOf("merged_median_zscores") !== -1) {
-                            profileList.push(obj);
-                        }
-                    } else {
+                    // if (obj["STABLE_ID"].toLowerCase().indexOf("zscores") !== -1) {
+                    //     if (obj["STABLE_ID"].toLowerCase().indexOf("merged_median_zscores") !== -1) {
+                    //         profileList.push(obj);
+                    //     }
+                    // } else {
                         profileList.push(obj);
-                    }
+                    // }
                 } else if (obj["GENETIC_ALTERATION_TYPE"] === "MUTATION_EXTENDED") {
                     has_mutation_data = true;
                 }
@@ -346,21 +346,22 @@ var MutPatView = (function() {
             function convertData(_result) {
                 //Convert the format of the callback result to fit datatable
                 mutpatTableArr = [];
-                // $.each(_result, function(i, obj) {
-                //     var tmp_arr = [];
-                //     tmp_arr.push(obj.gene);
-                //     tmp_arr.push(obj.cytoband);
-                //     tmp_arr.push(obj.pearson.toFixed(2));
-                //     tmp_arr.push(obj.spearman.toFixed(2));
-                //     mutpatTableArr.push(tmp_arr);
-                // });   
+                $.each(_result, function(i, obj) {
+                    var tmp_arr = [];
+                    tmp_arr.push(obj.pattern);
+                    tmp_arr.push(obj.magnitude);
+                    tmp_arr.push(obj.support);
+                    mutpatTableArr.push(tmp_arr);
+                });   
+                
+                
                 // Dummy Data for Mockup
-                mutpatTableArr.push(["TP53, TTN", 2, 0.52]);
-                mutpatTableArr.push(["CSMD3, TTN", 2, 0.30]);
-                mutpatTableArr.push(["NCOA3, TTN", 2, 0.24]);
-                mutpatTableArr.push(["TTN", 1, 0.74]);
-                mutpatTableArr.push(["TP53", 1, 0.76]);
-                mutpatTableArr.push(["PDE4DIP, TP53, TTN", 3, 0.22]);
+                // mutpatTableArr.push(["TP53, TTN", 2, 0.52]);
+                // mutpatTableArr.push(["CSMD3, TTN", 2, 0.30]);
+                // mutpatTableArr.push(["NCOA3, TTN", 2, 0.24]);
+                // mutpatTableArr.push(["TTN", 1, 0.74]);
+                // mutpatTableArr.push(["TP53", 1, 0.76]);
+                // mutpatTableArr.push(["PDE4DIP, TP53, TTN", 3, 0.22]);
             }
 
             function getMutPatDataCallBack(result, geneId) {
@@ -460,9 +461,9 @@ var MutPatView = (function() {
             _profile_list = _.extend(_profile_list, result[_gene]);
         });
         ProfileSelector.init(_profile_list);
-        if (profileList.length === 1) {
-            $("#mutpat-profile-selector-dropdown").hide();
-        }
+        // if (profileList.length === 1) {
+        //     $("#mutpat-profile-selector-dropdown").hide();
+        // }
         var mutPatSubTabView = new MutPatSubTabView();
         mutPatSubTabView.init(_genes[0]);
     }

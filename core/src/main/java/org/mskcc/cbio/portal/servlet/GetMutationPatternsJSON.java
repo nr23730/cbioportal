@@ -46,10 +46,13 @@ import org.mskcc.cbio.portal.dao.DaoGeneticProfile;
 import org.mskcc.cbio.portal.model.CancerStudy;
 import org.mskcc.cbio.portal.model.CanonicalGene;
 import org.mskcc.cbio.portal.model.GeneticProfile;
-import org.mskcc.cbio.portal.util.AccessControl;
-import org.mskcc.cbio.portal.util.CoExpUtil;
-import org.mskcc.cbio.portal.util.SpringUtil;
-import org.mskcc.cbio.portal.util.XssRequestWrapper;
+import org.mskcc.cbio.portal.util.*;
+
+import org.apache.spark.mllib.fpm.FPGrowth;
+import org.apache.spark.mllib.fpm.FPGrowthModel;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -60,6 +63,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Get the top co-expressed genes for queried genes
@@ -151,55 +155,76 @@ public class GetMutationPatternsJSON extends HttpServlet {
             GeneticProfile final_gp = DaoGeneticProfile.getGeneticProfileByStableId(profileId);
             if (final_gp != null) {
                 try {
-                    Map<Long, double[]> map = CoExpUtil.getExpressionMap(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey);
-                    int mapSize = map.size();
-                    List<Long> genes = new ArrayList<Long>(map.keySet());
-                    for (int i = 0; i < mapSize; i++) {
-                        double[] query_gene_exp = map.get(queryGeneId);
-                        long compared_gene_id = genes.get(i);
-                        double[] compared_gene_exp = map.get(compared_gene_id);
-                        if (compared_gene_exp != null && query_gene_exp != null) {
-                            //Filter out cases with empty value on either side
-                            int min_length = query_gene_exp.length < compared_gene_exp.length ? query_gene_exp.length : compared_gene_exp.length;
-                            ArrayList<Double> new_query_gene_exp_arrlist = new ArrayList<Double>();
-                            ArrayList<Double> new_compared_gene_exp_arrlist = new ArrayList<Double>();
-                            for (int k = 0; k < min_length; k++) {
-                                if (!Double.isNaN(query_gene_exp[k]) && !Double.isNaN(compared_gene_exp[k])) {
-                                    new_query_gene_exp_arrlist.add(query_gene_exp[k]);
-                                    new_compared_gene_exp_arrlist.add(compared_gene_exp[k]);
-                                }
-                            }
-                            Double[] _new_query_gene_exp = new_query_gene_exp_arrlist.toArray(new Double[0]);
-                            Double[] _new_compared_gene_exp = new_compared_gene_exp_arrlist.toArray(new Double[0]);
-                            //convert double object to primitive data
-                            double[] new_query_gene_exp = new double[_new_query_gene_exp.length];
-                            double[] new_compared_gene_exp = new double[_new_compared_gene_exp.length];
-                            for (int m = 0; m < _new_query_gene_exp.length; m++) {
-                                new_query_gene_exp[m] = _new_query_gene_exp[m].doubleValue();
-                                new_compared_gene_exp[m] = _new_compared_gene_exp[m].doubleValue();
-                            }
-
-                            if (new_query_gene_exp.length != 0 && new_compared_gene_exp.length != 0) {
-                                double pearson = pearsonsCorrelation.correlation(new_query_gene_exp, new_compared_gene_exp);
-                                if ((pearson >= coExpScoreThreshold ||
-                                    pearson <= (-1) * coExpScoreThreshold) &&
-                                    (compared_gene_id != queryGeneId)) {
-                                    //Only calculate spearman with high scored pearson gene pairs.
-                                    double spearman = spearmansCorrelation.correlation(new_query_gene_exp, new_compared_gene_exp);
-                                    if ((spearman >= coExpScoreThreshold || spearman <= (-1) * coExpScoreThreshold) &&
-                                        ((spearman > 0 && pearson > 0) || (spearman < 0 && pearson < 0))) {
-                                        CanonicalGene comparedGene = daoGeneOptimized.getGene(compared_gene_id);
-                                        ObjectNode _scores = mapper.createObjectNode();
-                                        _scores.put("gene", comparedGene.getHugoGeneSymbolAllCaps());
-                                        _scores.put("cytoband", comparedGene.getCytoband());
-                                        _scores.put("pearson", pearson);
-                                        _scores.put("spearman", spearman);
-                                        fullResultJson.add(_scores);
-                                    }
-                                }
-                            }
-                        }
+                    Map<Integer, Set<String>> map = MutPatUtil.getMutationMap(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId);
+                    List<List<String>> transactions = new ArrayList<>();
+                    for (Map.Entry<Integer, Set<String>> entry: map.entrySet()) {
+                        transactions.add(new ArrayList<>(entry.getValue()));
                     }
+                    JavaSparkContext sc = new JavaSparkContext();
+                    FPGrowth fpg = new FPGrowth().setMinSupport(0.2);
+                    JavaRDD<List<String>> rdd = sc.parallelize(transactions);
+                    FPGrowthModel<String> fpgModel = fpg.run(rdd);
+
+                    for (FPGrowth.FreqItemset<String> itemset: fpgModel.freqItemsets().toJavaRDD().collect()) {
+//                        System.out.println("[" + itemset.javaItems() + "], " + itemset.freq());
+
+                        ObjectNode _scores = mapper.createObjectNode();
+                        _scores.put("pattern", String.join(", ", itemset.javaItems()));
+                        _scores.put("magnitude", itemset.javaItems().size());
+                        _scores.put("support", itemset.freq());
+                        fullResultJson.add(_scores);
+                    }
+
+
+//                    Map<Long, double[]> map = CoExpUtil.getExpressionMap(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey);
+//                    int mapSize = map.size();
+//                    List<Long> genes = new ArrayList<Long>(map.keySet());
+//                    for (int i = 0; i < mapSize; i++) {
+//                        double[] query_gene_exp = map.get(queryGeneId);
+//                        long compared_gene_id = genes.get(i);
+//                        double[] compared_gene_exp = map.get(compared_gene_id);
+//                        if (compared_gene_exp != null && query_gene_exp != null) {
+//                            //Filter out cases with empty value on either side
+//                            int min_length = query_gene_exp.length < compared_gene_exp.length ? query_gene_exp.length : compared_gene_exp.length;
+//                            ArrayList<Double> new_query_gene_exp_arrlist = new ArrayList<Double>();
+//                            ArrayList<Double> new_compared_gene_exp_arrlist = new ArrayList<Double>();
+//                            for (int k = 0; k < min_length; k++) {
+//                                if (!Double.isNaN(query_gene_exp[k]) && !Double.isNaN(compared_gene_exp[k])) {
+//                                    new_query_gene_exp_arrlist.add(query_gene_exp[k]);
+//                                    new_compared_gene_exp_arrlist.add(compared_gene_exp[k]);
+//                                }
+//                            }
+//                            Double[] _new_query_gene_exp = new_query_gene_exp_arrlist.toArray(new Double[0]);
+//                            Double[] _new_compared_gene_exp = new_compared_gene_exp_arrlist.toArray(new Double[0]);
+//                            //convert double object to primitive data
+//                            double[] new_query_gene_exp = new double[_new_query_gene_exp.length];
+//                            double[] new_compared_gene_exp = new double[_new_compared_gene_exp.length];
+//                            for (int m = 0; m < _new_query_gene_exp.length; m++) {
+//                                new_query_gene_exp[m] = _new_query_gene_exp[m].doubleValue();
+//                                new_compared_gene_exp[m] = _new_compared_gene_exp[m].doubleValue();
+//                            }
+//
+//                            if (new_query_gene_exp.length != 0 && new_compared_gene_exp.length != 0) {
+//                                double pearson = pearsonsCorrelation.correlation(new_query_gene_exp, new_compared_gene_exp);
+//                                if ((pearson >= coExpScoreThreshold ||
+//                                    pearson <= (-1) * coExpScoreThreshold) &&
+//                                    (compared_gene_id != queryGeneId)) {
+//                                    //Only calculate spearman with high scored pearson gene pairs.
+//                                    double spearman = spearmansCorrelation.correlation(new_query_gene_exp, new_compared_gene_exp);
+//                                    if ((spearman >= coExpScoreThreshold || spearman <= (-1) * coExpScoreThreshold) &&
+//                                        ((spearman > 0 && pearson > 0) || (spearman < 0 && pearson < 0))) {
+//                                        CanonicalGene comparedGene = daoGeneOptimized.getGene(compared_gene_id);
+//                                        ObjectNode _scores = mapper.createObjectNode();
+//                                        _scores.put("gene", comparedGene.getHugoGeneSymbolAllCaps());
+//                                        _scores.put("cytoband", comparedGene.getCytoband());
+//                                        _scores.put("pearson", pearson);
+//                                        _scores.put("spearman", spearman);
+//                                        fullResultJson.add(_scores);
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
                     mapper.writeValue(out, fullResultJson);
                 } catch (DaoException e) {
                     System.out.println(e.getMessage());
