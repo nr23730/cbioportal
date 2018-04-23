@@ -62,10 +62,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Get the top co-expressed genes for queried genes
@@ -77,8 +74,6 @@ import java.util.Set;
  */
 public class GetMutationPatternsJSON extends HttpServlet {
 
-    private double coExpScoreThreshold = 0.3;
-    //private int resultLength = 250;
     
     // class which process access control to cancer studies
     private AccessControl accessControl;
@@ -243,53 +238,21 @@ public class GetMutationPatternsJSON extends HttpServlet {
             }
         } else {
             StringBuilder fullResutlStr = new StringBuilder();
-            fullResutlStr.append("Gene Symbol\tCytoband\tPearson Score\tSpearman Score\n");
+            fullResutlStr.append("SampleID\tMutations\n");
             GeneticProfile final_gp = DaoGeneticProfile.getGeneticProfileByStableId(profileId);
             if (final_gp != null) {
                 try {
-                    Map<Long, double[]> map = CoExpUtil.getExpressionMap(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey);
-                    int mapSize = map.size();
-                    List<Long> genes = new ArrayList<Long>(map.keySet());
-                    for (int i = 0; i < mapSize; i++) {
-                        double[] query_gene_exp = map.get(queryGeneId);
-                        long compared_gene_id = genes.get(i);
-                        double[] compared_gene_exp = map.get(compared_gene_id);
-                        if (compared_gene_exp != null && query_gene_exp != null) {
-                            //Filter out cases with empty value on either side
-                            int min_length = (query_gene_exp.length < compared_gene_exp.length) ? query_gene_exp.length : compared_gene_exp.length;
-                            ArrayList<Double> new_query_gene_exp_arrlist = new ArrayList<Double>();
-                            ArrayList<Double> new_compared_gene_exp_arrlist = new ArrayList<Double>();
-                            for (int k = 0; k < min_length; k++) {
-                                if (!Double.isNaN(query_gene_exp[k]) && !Double.isNaN(compared_gene_exp[k])) {
-                                    new_query_gene_exp_arrlist.add(query_gene_exp[k]);
-                                    new_compared_gene_exp_arrlist.add(compared_gene_exp[k]);
-                                }
-                            }
-                            Double[] _new_query_gene_exp = new_query_gene_exp_arrlist.toArray(new Double[0]);
-                            Double[] _new_compared_gene_exp = new_compared_gene_exp_arrlist.toArray(new Double[0]);
-                            //convert double object to primitive data
-                            double[] new_query_gene_exp = new double[_new_query_gene_exp.length];
-                            double[] new_compared_gene_exp = new double[_new_compared_gene_exp.length];
-                            for (int m = 0; m < _new_query_gene_exp.length; m++) {
-                                new_query_gene_exp[m] = _new_query_gene_exp[m].doubleValue();
-                                new_compared_gene_exp[m] = _new_compared_gene_exp[m].doubleValue();
-                            }
-                            if (new_query_gene_exp.length != 0 && new_compared_gene_exp.length != 0 &&
-                                compared_gene_id != queryGeneId) {
-                                double pearson = pearsonsCorrelation.correlation(new_query_gene_exp, new_compared_gene_exp);
-                                double spearman = spearmansCorrelation.correlation(new_query_gene_exp, new_compared_gene_exp);
-                                CanonicalGene comparedGene = daoGeneOptimized.getGene(compared_gene_id);
-                                fullResutlStr.append(
-                                    comparedGene.getHugoGeneSymbolAllCaps() + "\t" +
-                                    comparedGene.getCytoband() + "\t" +
-                                    (double) Math.round(pearson * 100) / 100 + "\t" +
-                                    (double) Math.round(spearman * 100) / 100 + "\n"
-                                );
-                            }
-                        }
+                    Map<Integer, Set<String>> map = MutPatUtil.getMutationMap(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId);
+                    TreeMap<Integer, Set<String>> treeMap = new TreeMap<>(map);
+                    for (Map.Entry<Integer, Set<String>> entry: treeMap.entrySet()) {
+                        fullResutlStr.append(
+                            entry.getKey() + "\t" +
+                                String.join(" ", entry.getValue()) + "\n"
+                        );
                     }
+                    
                     //construct file name
-                    String fileName = "coexpression_" + geneSymbol + "_" +
+                    String fileName = "mutationPatterns_" + geneSymbol + "_" +
                         final_gp.getProfileName().replaceAll("\\s+", "_") + "_" +
                         cancerStudyIdentifier.replaceAll("\\s+", "_") + ".txt";
 
