@@ -35,6 +35,7 @@ package org.mskcc.cbio.portal.servlet;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
@@ -82,12 +83,18 @@ public class GetMutationPatternsJSON extends HttpServlet {
     // class which process access control to cancer studies
     private AccessControl accessControl;
     
+    private SparkConf sparkConf;
+    private JavaSparkContext sc;
+    
     /**
      * Initializes the servlet.
      */
     public void init() throws ServletException {
         super.init();
         accessControl = SpringUtil.getAccessControl();
+
+        sparkConf = new SparkConf().setAppName("MutationPatterns").setMaster("local[2]").set("spark.executor.memory","1g");
+        sc = new JavaSparkContext(sparkConf);
     }
 
     /**
@@ -161,8 +168,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
                     for (Map.Entry<Integer, Set<String>> entry: map.entrySet()) {
                         transactions.add(new ArrayList<>(entry.getValue()));
                     }
-                    SparkConf sparkConf = new SparkConf().setAppName("MutationPatterns").setMaster("local[2]").set("spark.executor.memory","1g");
-                    JavaSparkContext sc = new JavaSparkContext(sparkConf);
+                    
                     FPGrowth fpg = new FPGrowth().setMinSupport(0.2);
                     JavaRDD<List<String>> rdd = sc.parallelize(transactions);
                     FPGrowthModel<String> fpgModel = fpg.run(rdd);
