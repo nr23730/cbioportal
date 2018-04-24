@@ -134,6 +134,7 @@ public class MutPatUtil {
 
     public static Map<Integer,Set<String>> getMutationMap(int profileId, String sampleSetId, String sampleIdsKeys, long entrezGeneId) throws DaoException {
 
+        List<String> geneList = Arrays.asList("TTN", "PDE4DIP", "TP53", "CSMD3", "DST", "OBSCN", "DNAH8", "LRP1B");
         
         Map<Integer, Double> expressionMap = getExpression(profileId, sampleSetId, sampleIdsKeys, entrezGeneId);
         Map<Integer,Set<String>> map = new HashMap<>();
@@ -142,7 +143,7 @@ public class MutPatUtil {
         GetMutationData remoteCallMutation = new GetMutationData(mutationRepositoryLegacy, mutationModelConverter);
         GeneticProfile geneticProfile = DaoGeneticProfile.getGeneticProfileById(profileId);
         List<ExtendedMutation> mutationList = remoteCallMutation.getMutationData(geneticProfile,
-            null,
+            geneList,
             setOfSampleIds,
             null);
 

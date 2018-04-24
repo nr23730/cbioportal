@@ -164,7 +164,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
                         transactions.add(new ArrayList<>(entry.getValue()));
                     }
                     
-                    FPGrowth fpg = new FPGrowth().setMinSupport(0.2);
+                    FPGrowth fpg = new FPGrowth().setMinSupport(0.1);
                     JavaRDD<List<String>> rdd = sc.parallelize(transactions);
                     FPGrowthModel<String> fpgModel = fpg.run(rdd);
 
