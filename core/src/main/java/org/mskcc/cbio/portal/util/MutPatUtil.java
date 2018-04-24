@@ -32,14 +32,28 @@
 
 package org.mskcc.cbio.portal.util;
 
+import org.apache.log4j.Logger;
 import org.mskcc.cbio.portal.dao.*;
 import org.mskcc.cbio.portal.model.*;
+import org.mskcc.cbio.portal.model.converter.MutationModelConverter;
+import org.mskcc.cbio.portal.repository.MutationRepositoryLegacy;
+import org.mskcc.cbio.portal.web_api.GetMutationData;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-
+@Component
 public class MutPatUtil {
+    private static final Logger logger = Logger.getLogger(MutPatUtil.class);
 
+    @Autowired
+    private static MutationRepositoryLegacy mutationRepositoryLegacy;
+
+    @Autowired
+    private static MutationModelConverter mutationModelConverter;
+    
+    
     @SuppressWarnings("Duplicates")
     public static ArrayList<String> getSampleIds(String sampleSetId, String sampleIdsKeys) {
 		try {
@@ -120,23 +134,51 @@ public class MutPatUtil {
 
     public static Map<Integer,Set<String>> getMutationMap(int profileId, String sampleSetId, String sampleIdsKeys, long entrezGeneId) throws DaoException {
 
+        
         Map<Integer, Double> expressionMap = getExpression(profileId, sampleSetId, sampleIdsKeys, entrezGeneId);
         Map<Integer,Set<String>> map = new HashMap<>();
+        
+        Set<String> setOfSampleIds = new HashSet<String>(getSampleIds(sampleSetId,sampleIdsKeys));
+        GetMutationData remoteCallMutation = new GetMutationData(mutationRepositoryLegacy, mutationModelConverter);
+        GeneticProfile geneticProfile = DaoGeneticProfile.getGeneticProfileById(profileId);
+        List<ExtendedMutation> mutationList = remoteCallMutation.getMutationData(geneticProfile,
+            null,
+            setOfSampleIds,
+            null);
+
+        for (ExtendedMutation mutation : mutationList)
+        {
+            Integer sampleId = mutation.getSampleId();
+
+            if (expressionMap != null &&
+                expressionMap.keySet().contains(sampleId))
+            {
+                if (!map.containsKey(sampleId)) {
+                    map.put(sampleId, new HashSet<String>());
+                }
+                map.get(sampleId).add(mutation.getGeneSymbol());
+            }
+        }
+        return map;
+
 //        TreeMap<Double, Integer> sortedMap = new TreeMap<Double, Integer>();
 //        
 //        for (Map.Entry<Integer, Double> entry: expressionMap.entrySet()) {
 //            sortedMap.put(entry.getValue(),entry.getKey());
 //        }
-        for (Map.Entry<Integer, Double> entry: expressionMap.entrySet()) {
-            int sampleId = entry.getKey();
-            ArrayList<ExtendedMutation> mutations = DaoMutation.getMutations(profileId, sampleId);
-            Set<String> mutatedGenes = new HashSet<>();
-            for (ExtendedMutation mutation : mutations) {
-                mutatedGenes.add(mutation.getGeneSymbol());
-            }
-            map.put(sampleId, mutatedGenes);
-        }
-        return map;
+        
+        
+//        for (Map.Entry<Integer, Double> entry: expressionMap.entrySet()) {
+//            int sampleId = entry.getKey();
+//            ArrayList<ExtendedMutation> mutations = DaoMutation.getMutations(profileId, sampleId);
+//            
+//            Set<String> mutatedGenes = new HashSet<>();
+//            for (ExtendedMutation mutation : mutations) {
+//                mutatedGenes.add(mutation.getGeneSymbol());
+//            }
+//            map.put(sampleId, mutatedGenes);
+//        }
+//        return map;
     }
 	
 }
