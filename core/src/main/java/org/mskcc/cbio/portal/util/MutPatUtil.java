@@ -141,6 +141,12 @@ public class MutPatUtil {
         
         Set<String> setOfSampleIds = new HashSet<String>(getSampleIds(sampleSetId,sampleIdsKeys));
         try {
+            if(mutationModelConverter == null) {
+                throw new Exception("mutationModelConverter is null");
+            }
+            if(mutationRepositoryLegacy == null) {
+                throw new Exception("mutationRepositoryLegacy is null");
+            }
             GetMutationData remoteCallMutation = new GetMutationData(mutationRepositoryLegacy, mutationModelConverter);
             GeneticProfile geneticProfile = DaoGeneticProfile.getGeneticProfileById(profileId);
             List<ExtendedMutation> mutationList = remoteCallMutation.getMutationData(geneticProfile,
@@ -166,14 +172,16 @@ public class MutPatUtil {
             e.printStackTrace();
             logger.trace(e.getMessage());
             int counter = 0;
-            for (Map.Entry<Integer, Double> entry: expressionMap.entrySet()) {
+            for (Map.Entry<Integer, Double> entry : expressionMap.entrySet()) {
                 int sampleId = entry.getKey();
-                map.put(sampleId,new HashSet<>());
+                map.put(sampleId, new HashSet<>());
                 map.get(sampleId).add("A");
-                if(counter % 2 == 0) map.get(sampleId).add("B");
-                if(counter % 3 == 0) map.get(sampleId).add("C");
+                if (counter % 2 == 0) map.get(sampleId).add("B");
+                if (counter % 3 == 0) map.get(sampleId).add("C");
                 counter++;
             }
+            return map;
+        }
 
 //        TreeMap<Double, Integer> sortedMap = new TreeMap<Double, Integer>();
 //        
