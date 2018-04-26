@@ -32,6 +32,7 @@
 
 package org.mskcc.cbio.portal.servlet;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.codehaus.jackson.JsonNode;
@@ -145,8 +146,8 @@ public class GetMutationPatternsJSON extends HttpServlet {
         String caseIdsKey = httpServletRequest.getParameter("case_ids_key");
         boolean isFullResult = Boolean.parseBoolean(httpServletRequest.getParameter("is_full_result"));
         
-        int groups = Integer.parseInt(httpServletRequest.getParameter("groups"));
-        double zScoreThreshold = Double.parseDouble(httpServletRequest.getParameter("zscore_threshold"));
+        int groups = NumberUtils.toInt(httpServletRequest.getParameter("groups"), 1);
+        double zScoreThreshold = NumberUtils.toDouble(httpServletRequest.getParameter("zscore_threshold"), 2.0);
         
         DaoGeneOptimized daoGeneOptimized = DaoGeneOptimized.getInstance();
 
