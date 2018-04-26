@@ -58,6 +58,7 @@ var MutPatView = (function() {
         has_mutation_data = false;
     //Containers    
     var profileList = []; //Profile Lists for all queried genes
+    var groupsList = [{"ID":1, "NAME":"1"}, {"ID":2, "NAME":"2"}, {"ID":5, "NAME":"5"}, {"ID":10, "NAME":"10"}, {"ID":0, "NAME":"Use Z-Scores"}]; //Groups Lists for all queried genes
 
     //Sub tabs
     var Tabs = (function() {
@@ -179,6 +180,59 @@ var MutPatView = (function() {
 
     }()); //Closing Profile Selector
 
+    var GroupsSelector = (function() {
+
+        
+        function drawGroupsSelector() {
+            $("#mutpat-groups-selector-dropdown").append(
+                "Groups " +
+                "<select id='mutpat-groups-selector'></select>");
+            $.each(groupsList, function(index, value) {
+                $("#mutpat-groups-selector").append(
+                    "<option value='" + value["ID"] + "'>" +
+                    value["NAME"] + "</option>"
+                );
+            });
+        }
+
+        function bindListener() {
+            $("#mutpat-groups-selector").change(function() {
+                var geneIds = window.QuerySession.getQueryGenes();
+                $.each(geneIds, function(index, value) {
+                    //Distroy all the subview instances
+                    var element =  document.getElementById(Prefix.tableDivPrefix + cbio.util.safeProperty(value));
+                    if (typeof(element) !== 'undefined' && element !== null) {
+                        element.parentNode.removeChild(element); //destroy all the existing instances
+                    }
+                    // element =  document.getElementById(Prefix.plotPrefix + cbio.util.safeProperty(value));
+                    // if (typeof(element) !== 'undefined' && element !== null) { 
+                    //     element.parentNode.removeChild(element); //destroy all the existing instances
+                    // }   
+                    //Empty all the sub divs
+                    $("#" + Prefix.tableDivPrefix + cbio.util.safeProperty(value)).empty();
+                    // $("#" + Prefix.plotsPreFix + cbio.util.safeProperty(value)).empty();
+                    $("#" + Prefix.loadingImgPrefix + cbio.util.safeProperty(value)).empty();
+                    //Add back loading imgs
+                    $("#" + Prefix.loadingImgPrefix + cbio.util.safeProperty(value)).append(
+                        "<table><tr><td><img style='padding:20px;' src='images/ajax-loader.gif' alt='loading' /></td>" +
+                        "<td>Calculating and rendering may take up to 1 minute.</td></tr></table>" +
+                        "</div>");
+                });
+                //Re-draw the currently selected sub-tab view
+                var curTabIndex = $("#mutpat-tabs").tabs("option", "active");
+                var mutPatSubTabView = new MutPatSubTabView();
+                mutPatSubTabView.init(geneIds[curTabIndex]);
+            });
+        }
+
+        return {
+            init: function() {
+                drawGroupsSelector();
+                bindListener();
+            }
+        };
+
+    }()); //Closing Groups Selector
 
     //Instance of each sub tab
     var MutPatSubTabView = function() {
@@ -279,6 +333,8 @@ var MutPatView = (function() {
                     "<input type='hidden' name='cancer_study_id' value='" + window.QuerySession.getCancerStudyIds()[0] + "'>" +
                     "<input type='hidden' name='gene' value='" + geneId + "'>" +
                     "<input type='hidden' name='profile_id' value='" + $("#mutpat-profile-selector :selected").val() + "'>" + 
+                    "<input type='hidden' name='groups' value='" + $("#mutpat-groups-selector :selected").val() + "'>" + 
+                    "<input type='hidden' name='zscore_threshold' value='" + window.QuerySession.getZScoreThreshold() + "'>" +
                     "<input type='hidden' name='case_set_id' value='" + window.QuerySession.getCaseSetId() + "'>" +
                     "<input type='hidden' name='case_ids_key' value='" + window.QuerySession.getCaseIdsKey() + "'>" +
                     "<input type='hidden' name='is_full_result' value='true'>" +
@@ -390,6 +446,8 @@ var MutPatView = (function() {
                          cancer_study_id: window.QuerySession.getCancerStudyIds()[0],
                          gene: _geneId,
                          profile_id: $("#mutpat-profile-selector :selected").val(),
+                         groups: $("#mutpat-groups-selector :selected").val(),
+                         zscore_threshold: window.QuerySession.getZScoreThreshold(),
                          case_set_id: window.QuerySession.getCaseSetId(),
                          case_ids_key: window.QuerySession.getCaseIdsKey(),
                          is_full_result: "false"
@@ -461,6 +519,7 @@ var MutPatView = (function() {
             _profile_list = _.extend(_profile_list, result[_gene]);
         });
         ProfileSelector.init(_profile_list);
+        GroupsSelector.init();
         // if (profileList.length === 1) {
         //     $("#mutpat-profile-selector-dropdown").hide();
         // }
