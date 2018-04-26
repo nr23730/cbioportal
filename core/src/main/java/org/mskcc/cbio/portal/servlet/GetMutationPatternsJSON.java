@@ -32,8 +32,6 @@
 
 package org.mskcc.cbio.portal.servlet;
 
-import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
-import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.codehaus.jackson.JsonNode;
@@ -147,8 +145,9 @@ public class GetMutationPatternsJSON extends HttpServlet {
         String caseIdsKey = httpServletRequest.getParameter("case_ids_key");
         boolean isFullResult = Boolean.parseBoolean(httpServletRequest.getParameter("is_full_result"));
 
-        PearsonsCorrelation pearsonsCorrelation = new PearsonsCorrelation();
-        SpearmansCorrelation spearmansCorrelation = new SpearmansCorrelation();
+        int groups = 10;
+        double zScoreThreshold = 0;
+        
         DaoGeneOptimized daoGeneOptimized = DaoGeneOptimized.getInstance();
 
         CanonicalGene geneObj = daoGeneOptimized.getGene(geneSymbol);
@@ -158,9 +157,9 @@ public class GetMutationPatternsJSON extends HttpServlet {
             GeneticProfile final_gp = DaoGeneticProfile.getGeneticProfileByStableId(profileId);
             if (final_gp != null) {
                 try {
-                    Map<Integer, Set<String>> map = MutPatUtil.getMutationMap(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId);
+                    Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getMutationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold);
                     List<List<String>> transactions = new ArrayList<>();
-                    for (Map.Entry<Integer, Set<String>> entry: map.entrySet()) {
+                    for (Map.Entry<String, Set<String>> entry: map.get(0).entrySet()) {
                         transactions.add(new ArrayList<>(entry.getValue()));
                     }
                     
@@ -169,65 +168,12 @@ public class GetMutationPatternsJSON extends HttpServlet {
                     FPGrowthModel<String> fpgModel = fpg.run(rdd);
 
                     for (FPGrowth.FreqItemset<String> itemset: fpgModel.freqItemsets().toJavaRDD().collect()) {
-//                        System.out.println("[" + itemset.javaItems() + "], " + itemset.freq());
-
                         ObjectNode _scores = mapper.createObjectNode();
                         _scores.put("pattern", String.join(", ", itemset.javaItems()));
                         _scores.put("magnitude", itemset.javaItems().size());
                         _scores.put("support", itemset.freq());
                         fullResultJson.add(_scores);
                     }
-
-
-//                    Map<Long, double[]> map = CoExpUtil.getExpressionMap(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey);
-//                    int mapSize = map.size();
-//                    List<Long> genes = new ArrayList<Long>(map.keySet());
-//                    for (int i = 0; i < mapSize; i++) {
-//                        double[] query_gene_exp = map.get(queryGeneId);
-//                        long compared_gene_id = genes.get(i);
-//                        double[] compared_gene_exp = map.get(compared_gene_id);
-//                        if (compared_gene_exp != null && query_gene_exp != null) {
-//                            //Filter out cases with empty value on either side
-//                            int min_length = query_gene_exp.length < compared_gene_exp.length ? query_gene_exp.length : compared_gene_exp.length;
-//                            ArrayList<Double> new_query_gene_exp_arrlist = new ArrayList<Double>();
-//                            ArrayList<Double> new_compared_gene_exp_arrlist = new ArrayList<Double>();
-//                            for (int k = 0; k < min_length; k++) {
-//                                if (!Double.isNaN(query_gene_exp[k]) && !Double.isNaN(compared_gene_exp[k])) {
-//                                    new_query_gene_exp_arrlist.add(query_gene_exp[k]);
-//                                    new_compared_gene_exp_arrlist.add(compared_gene_exp[k]);
-//                                }
-//                            }
-//                            Double[] _new_query_gene_exp = new_query_gene_exp_arrlist.toArray(new Double[0]);
-//                            Double[] _new_compared_gene_exp = new_compared_gene_exp_arrlist.toArray(new Double[0]);
-//                            //convert double object to primitive data
-//                            double[] new_query_gene_exp = new double[_new_query_gene_exp.length];
-//                            double[] new_compared_gene_exp = new double[_new_compared_gene_exp.length];
-//                            for (int m = 0; m < _new_query_gene_exp.length; m++) {
-//                                new_query_gene_exp[m] = _new_query_gene_exp[m].doubleValue();
-//                                new_compared_gene_exp[m] = _new_compared_gene_exp[m].doubleValue();
-//                            }
-//
-//                            if (new_query_gene_exp.length != 0 && new_compared_gene_exp.length != 0) {
-//                                double pearson = pearsonsCorrelation.correlation(new_query_gene_exp, new_compared_gene_exp);
-//                                if ((pearson >= coExpScoreThreshold ||
-//                                    pearson <= (-1) * coExpScoreThreshold) &&
-//                                    (compared_gene_id != queryGeneId)) {
-//                                    //Only calculate spearman with high scored pearson gene pairs.
-//                                    double spearman = spearmansCorrelation.correlation(new_query_gene_exp, new_compared_gene_exp);
-//                                    if ((spearman >= coExpScoreThreshold || spearman <= (-1) * coExpScoreThreshold) &&
-//                                        ((spearman > 0 && pearson > 0) || (spearman < 0 && pearson < 0))) {
-//                                        CanonicalGene comparedGene = daoGeneOptimized.getGene(compared_gene_id);
-//                                        ObjectNode _scores = mapper.createObjectNode();
-//                                        _scores.put("gene", comparedGene.getHugoGeneSymbolAllCaps());
-//                                        _scores.put("cytoband", comparedGene.getCytoband());
-//                                        _scores.put("pearson", pearson);
-//                                        _scores.put("spearman", spearman);
-//                                        fullResultJson.add(_scores);
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
                     mapper.writeValue(out, fullResultJson);
                 } catch (DaoException e) {
                     System.out.println(e.getMessage());
@@ -238,19 +184,22 @@ public class GetMutationPatternsJSON extends HttpServlet {
             }
         } else {
             StringBuilder fullResutlStr = new StringBuilder();
-            fullResutlStr.append("SampleID\tMutations\n");
+            fullResutlStr.append("Group\tSampleID\tMutations\n");
             GeneticProfile final_gp = DaoGeneticProfile.getGeneticProfileByStableId(profileId);
             if (final_gp != null) {
                 try {
-                    Map<Integer, Set<String>> map = MutPatUtil.getMutationMap(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId);
-                    TreeMap<Integer, Set<String>> treeMap = new TreeMap<>(map);
-                    for (Map.Entry<Integer, Set<String>> entry: treeMap.entrySet()) {
-                        fullResutlStr.append(
-                            entry.getKey() + "\t" +
-                                String.join(" ", entry.getValue()) + "\n"
-                        );
+                    Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getMutationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold);
+                    for (int i = 0; i < map.size(); i++ ) {
+                        TreeMap<String, Set<String>> treeMap = new TreeMap<>(map.get(i));
+                        for (Map.Entry<String, Set<String>> entry: treeMap.entrySet()) {
+                            fullResutlStr.append(
+                                i + "\t" +
+                                    entry.getKey() + "\t" +
+                                    String.join(" ", entry.getValue()) + "\n"
+                            );
+                        }
                     }
-                    
+
                     //construct file name
                     String fileName = "mutationPatterns_" + geneSymbol + "_" +
                         final_gp.getProfileName().replaceAll("\\s+", "_") + "_" +

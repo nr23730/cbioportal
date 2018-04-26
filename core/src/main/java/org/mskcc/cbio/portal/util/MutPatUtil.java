@@ -103,43 +103,91 @@ public class MutPatUtil {
     }
 
 
-    public static Map<Integer,Double> getExpression(int profileId, String sampleSetId, String sampleIdsKeys, long entrezGeneId) throws DaoException {
+    public static TreeMap<Double, String> getExpression(int profileId, String sampleSetId, String sampleIdsKeys, long entrezGeneId) throws DaoException {
 
-        GeneticProfile gp = DaoGeneticProfile.getGeneticProfileById(profileId);
+        GeneticProfile final_gp = DaoGeneticProfile.getGeneticProfileById(profileId);
         List<String> stableSampleIds = getSampleIds(sampleSetId, sampleIdsKeys);
-        List<Integer> sampleIds = new ArrayList<Integer>();
-        for(String sampleId : stableSampleIds) {
-            Sample sample = DaoSample.getSampleByCancerStudyAndSampleId(gp.getCancerStudyId(), sampleId);
-            sampleIds.add(sample.getInternalId());
-        }
-        sampleIds.retainAll(DaoSampleProfile.getAllSampleIdsInProfile(profileId));
+        List<Integer> sampleIds = InternalIdUtil.getInternalSampleIds(final_gp.getCancerStudyId(), stableSampleIds);
+        TreeMap<Double, String> map = new TreeMap<Double, String>();
+        DaoGeneOptimized daoGeneOptimized = DaoGeneOptimized.getInstance();
 
-        DaoGeneticAlteration daoGeneticAlteration = DaoGeneticAlteration.getInstance();
-        Map<Integer, String> mapStr = daoGeneticAlteration.getGeneticAlterationMap(profileId, entrezGeneId);
-        Map<Integer, Double> map = new HashMap<Integer, Double>(mapStr.size());
-        for (Map.Entry<Integer, String> entry : mapStr.entrySet()) {
-            Integer caseId = entry.getKey();
-            String value = entry.getValue();
-            Double d;
-            try {
-                d = Double.valueOf(value);
-            } catch (Exception e) {
-                d = Double.NaN;
+        ArrayList<String> tmpProfileDataArr =
+            GeneticAlterationUtil.getGeneticAlterationDataRow(
+                daoGeneOptimized.getGene(entrezGeneId),
+                sampleIds,
+                final_gp
+            );
+        for (int i = 0; i < sampleIds.size(); i++) {
+            if (!tmpProfileDataArr.get(i).equals("NA") &&
+                tmpProfileDataArr.get(i) != null &&
+                !tmpProfileDataArr.get(i).equals("NaN") &&
+                !tmpProfileDataArr.get(i).equals("")) {
+                Double d;
+                try {
+                    d = Double.valueOf(tmpProfileDataArr.get(i));
+                } catch (Exception e) {
+                    d = Double.NaN;
+                }
+                Sample sample = DaoSample.getSampleById(sampleIds.get(i));
+                map.put(d, sample.getStableId());
             }
-            map.put(caseId, d);
         }
-
         return map;
     }
 
-    public static Map<Integer,Set<String>> getMutationMap(int profileId, String sampleSetId, String sampleIdsKeys, long entrezGeneId) throws DaoException {
+    public static Map<Integer, Map<String,Set<String>>> getMutationMaps(int profileId, String sampleSetId, String sampleIdsKeys, long entrezGeneId, int groups, double zScoreThreshold) throws DaoException {
+        
+        TreeMap<Double, String> expressionMap = getExpression(profileId, sampleSetId, sampleIdsKeys, entrezGeneId);
+        Map<Integer, Set<String>> groupsMap = new HashMap<>();
+        Map<Integer, Map<String,Set<String>>> resultMap = new HashMap<>();
+        
+        if( groups <= 0) {
+            // use z-score threshold
+            Set<String> low = new HashSet<>();
+            Set<String> normal = new HashSet<>();
+            Set<String> high = new HashSet<>();
+            for (Map.Entry<Double, String> entry: expressionMap.entrySet()) {
+                if(entry.getKey() <= zScoreThreshold) {
+                    low.add(entry.getValue());
+                } else if(entry.getKey() >= zScoreThreshold) {
+                    high.add(entry.getValue());
+                } else {
+                    normal.add(entry.getValue());
+                }
+            }
+            groupsMap.put(0, low);
+            groupsMap.put(1, normal);
+            groupsMap.put(2, high);
+        } else {
+            List<String> orderedSampleIds = new ArrayList<>(expressionMap.values());
+            int itemsPerGroup = expressionMap.size();
+            if (groups >= 1 && expressionMap.size() > groups) {
+                itemsPerGroup = expressionMap.size() / groups;
+            }
+            for (int i = 0; i < groups; i++) {
+                Set<String> sampleIdsInGroup = new HashSet<>();
+                int start = i*itemsPerGroup;
+                int end = (i+1) * itemsPerGroup;
+                if (i == groups-1) {
+                    end = expressionMap.size();
+                }
+                for(int j = start; j < end; j++) {
+                    sampleIdsInGroup.add(orderedSampleIds.get(j));
+                }
+                groupsMap.put(i, sampleIdsInGroup);
+            }
+        }
 
+        for (int i = 0; i < groups; i++) {
+            resultMap.put(i, getMutationMap(profileId, groupsMap.get(i)));
+        }
+        
+        return resultMap;
+    }
+
+    public static Map<String,Set<String>> getMutationMap(int profileId, Set<String> setOfSampleIds) throws DaoException {
         List<String> geneList = Arrays.asList("TTN", "PDE4DIP", "TP53", "CSMD3", "DST", "OBSCN", "DNAH8", "LRP1B");
-        
-        Map<Integer, Double> expressionMap = getExpression(profileId, sampleSetId, sampleIdsKeys, entrezGeneId);
-        Map<Integer,Set<String>> map = new HashMap<>();
-        
-        Set<String> setOfSampleIds = new HashSet<String>(getSampleIds(sampleSetId,sampleIdsKeys));
+        Map<String,Set<String>> map = new HashMap<>();
         try {
             if(mutationModelConverter == null) {
                 throw new Exception("mutationModelConverter is null");
@@ -156,10 +204,13 @@ public class MutPatUtil {
 
             for (ExtendedMutation mutation : mutationList)
             {
-                Integer sampleId = mutation.getSampleId();
-    
-                if (expressionMap != null &&
-                    expressionMap.keySet().contains(sampleId))
+                Integer internalSampleId = mutation.getSampleId();
+                Sample sample = DaoSample.getSampleById(internalSampleId);
+                String sampleId = sample.getStableId();
+
+
+                if (setOfSampleIds != null &&
+                    setOfSampleIds.contains(sampleId))
                 {
                     if (!map.containsKey(sampleId)) {
                         map.put(sampleId, new HashSet<String>());
@@ -172,8 +223,8 @@ public class MutPatUtil {
             e.printStackTrace();
             logger.trace(e.getMessage());
             int counter = 0;
-            for (Map.Entry<Integer, Double> entry : expressionMap.entrySet()) {
-                int sampleId = entry.getKey();
+            for (String entry : setOfSampleIds) {
+                String sampleId = entry;
                 map.put(sampleId, new HashSet<>());
                 map.get(sampleId).add("A");
                 if (counter % 2 == 0) map.get(sampleId).add("B");
@@ -182,25 +233,12 @@ public class MutPatUtil {
             }
             return map;
         }
-
-//        TreeMap<Double, Integer> sortedMap = new TreeMap<Double, Integer>();
-//        
-//        for (Map.Entry<Integer, Double> entry: expressionMap.entrySet()) {
-//            sortedMap.put(entry.getValue(),entry.getKey());
-//        }
-        
-        
-//        for (Map.Entry<Integer, Double> entry: expressionMap.entrySet()) {
-//            int sampleId = entry.getKey();
-//            ArrayList<ExtendedMutation> mutations = DaoMutation.getMutations(profileId, sampleId);
-//            
-//            Set<String> mutatedGenes = new HashSet<>();
-//            for (ExtendedMutation mutation : mutations) {
-//                mutatedGenes.add(mutation.getGeneSymbol());
-//            }
-//            map.put(sampleId, mutatedGenes);
-//        }
-//        return map;
     }
-	
+
+    public static Map<String,Set<String>> getMutationMap(int profileId, String sampleSetId, String sampleIdsKeys) throws DaoException {
+        Set<String> setOfSampleIds = new HashSet<String>(getSampleIds(sampleSetId,sampleIdsKeys));
+        return getMutationMap(profileId, setOfSampleIds);
+    }
+
+
 }
