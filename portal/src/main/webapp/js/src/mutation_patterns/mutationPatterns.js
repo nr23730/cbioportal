@@ -404,7 +404,7 @@ var MutPatView = (function() {
                 // Get ID for table
                 var id = 0;
                 if (position === "R") {
-                    if (_groups === 0) {
+                    if (_groups == 0) {
                         id = 2;
                     } else {
                         id = _groups-1;
@@ -428,7 +428,7 @@ var MutPatView = (function() {
                 if (result.length === 0) {
                     $("#" + Names.tableDivId + position).append("There are no alteration patterns with an support of ?? or higher.");
                     attachDownloadFullResultButton();                    
-                } else if (position === "R" && groups === 1) {
+                } else if (position === "R" && groups == 1) {
                     $("#" + Names.tableDivId + position).append("There is only one group to display.");
                 } else {
                     //Render datatable
