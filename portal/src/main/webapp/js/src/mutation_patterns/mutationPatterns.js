@@ -53,6 +53,7 @@ var MutPatView = (function() {
         },
         dim = {
             mutpat_table_width: "380px",
+            mutpat_tables_width: "800px",
             mutpat_plots_width: "750px"
         },
         has_mutation_data = false;
@@ -344,7 +345,7 @@ var MutPatView = (function() {
 
             function attachMagnitudeFilter() { 
                 //Add drop down filter for single/all pattern display
-                $("#" + Names.tableDivId).find('.mutpat-table-filter-magnitude').append(
+                $("#" + Names.tableDivId + position).find('.mutpat-table-filter-magnitude').append(
                     "<select id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "' style='width: 230px; margin-left: 5px;'>" +
                     "<option value='all'>Show All</option>" +
                     "<option value='singleMagnitude'>Show Only Single Genes</option>" +
@@ -415,7 +416,7 @@ var MutPatView = (function() {
                 //Hide the loading img
                 $("#" + Names.loadingImgId).empty();
                 if (result.length === 0) {
-                    $("#" + Names.tableDivId).append("There are no alteration patterns with an support of ?? or higher.");
+                    $("#" + Names.tableDivId + position).append("There are no alteration patterns with an support of ?? or higher.");
                     attachDownloadFullResultButton();                    
                 } else {
                     //Render datatable
@@ -468,11 +469,23 @@ var MutPatView = (function() {
 
         function drawLayout() {
             //Configure the layout(div) of table and plots
+            var tableDivIdL = Names.tableDivId + "L";
+            var tableDivIdR = Names.tableDivId + "R";
+            
             $("#" + Names.divId).append(
                 "<table>" +
                 "<tr>" +
-                "<td width='" + dim.mutpat_table_width + "' valign='top'>" + 
-                "<div id='" + Names.tableDivId + "'></div></td>" +
+                "<td width='" + dim.mutpat_tables_width + "' valign='top'>" + 
+                "<div id='" + Names.tableDivId + "'> " +
+                "<table>" +
+                "<tr>" +
+                "<td width='" + dim.mutpat_table_width + "' valign='top' align='left'>" +
+                "<div id='" + tableDivIdL + "'></div></td>" +
+                "<td width='" + dim.mutpat_table_width + "' valign='top' align='right'>" +
+                "<div id='" + tableDivIdR + "'></div></td>" +
+                "</tr>" +
+                "</table>" +
+                "</div></td>" +
                 // "<td width='" + dim.mutpat_plots_width + "' valign='top'>" + 
                 // "<div id='" + Names.plotId + "'></div></td>" +
                 "</tr>" +
