@@ -33,6 +33,8 @@
 package org.mskcc.cbio.portal.util;
 
 import org.apache.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.mskcc.cbio.portal.dao.*;
 import org.mskcc.cbio.portal.model.*;
 import org.mskcc.cbio.portal.model.converter.MutationModelConverter;
@@ -53,6 +55,13 @@ public class MutPatUtil {
     @Autowired
     private static MutationModelConverter mutationModelConverter;
     
+    private static MutationDataUtils mutationDataUtils;
+    public MutationDataUtils getMutationDataUtils() {
+        return mutationDataUtils;
+    }
+    public void setMutationDataUtils(MutationDataUtils mutationDataUtils) {
+        this.mutationDataUtils = mutationDataUtils;
+    }
     
     @SuppressWarnings("Duplicates")
     public static ArrayList<String> getSampleIds(String sampleSetId, String sampleIdsKeys) {
@@ -223,35 +232,50 @@ public class MutPatUtil {
         List<String> geneList = Arrays.asList("TTN", "PDE4DIP", "TP53", "CSMD3", "DST", "OBSCN", "DNAH8", "LRP1B");
         Map<String,Set<String>> map = new HashMap<>();
         try {
-            if(mutationModelConverter == null) {
-                throw new Exception("mutationModelConverter is null");
-            }
-            if(mutationRepositoryLegacy == null) {
-                throw new Exception("mutationRepositoryLegacy is null");
-            }
-            GetMutationData remoteCallMutation = new GetMutationData(mutationRepositoryLegacy, mutationModelConverter);
             GeneticProfile geneticProfile = DaoGeneticProfile.getGeneticProfileById(profileId);
-            List<ExtendedMutation> mutationList = remoteCallMutation.getMutationData(geneticProfile,
-                geneList,
-                setOfSampleIds,
-                null);
-
-            for (ExtendedMutation mutation : mutationList)
-            {
-                Integer internalSampleId = mutation.getSampleId();
-                Sample sample = DaoSample.getSampleById(internalSampleId);
-                String sampleId = sample.getStableId();
 
 
-                if (setOfSampleIds != null &&
-                    setOfSampleIds.contains(sampleId))
-                {
-                    if (!map.containsKey(sampleId)) {
-                        map.put(sampleId, new HashSet<String>());
-                    }
-                    map.get(sampleId).add(mutation.getGeneSymbol());
+//            if(mutationModelConverter == null) {
+//                throw new Exception("mutationModelConverter is null");
+//            }
+//            if(mutationRepositoryLegacy == null) {
+//                throw new Exception("mutationRepositoryLegacy is null");
+//            }
+//            GetMutationData remoteCallMutation = new GetMutationData(mutationRepositoryLegacy, mutationModelConverter);
+//            List<ExtendedMutation> mutationList = remoteCallMutation.getMutationData(geneticProfile,
+//                geneList,
+//                setOfSampleIds,
+//                null);
+//            
+//            for (ExtendedMutation mutation : mutationList)
+//            {
+//                Integer internalSampleId = mutation.getSampleId();
+//                Sample sample = DaoSample.getSampleById(internalSampleId);
+//                String sampleId = sample.getStableId();
+//
+//
+//                if (setOfSampleIds != null &&
+//                    setOfSampleIds.contains(sampleId))
+//                {
+//                    if (!map.containsKey(sampleId)) {
+//                        map.put(sampleId, new HashSet<String>());
+//                    }
+//                    map.get(sampleId).add(mutation.getGeneSymbol());
+//                }
+//            }
+
+            JSONArray mutationData = mutationDataUtils.getMutationData(geneticProfile.getStableId(), geneList, new ArrayList<>(setOfSampleIds));
+
+            for (int i = 0; i < mutationData.size(); i++) {
+                JSONObject jsonobject = (JSONObject) mutationData.get(i);
+                String caseId = jsonobject.get("CASE_ID").toString();
+                String gene = jsonobject.get("GENE_SYMBOL").toString();
+                if (map.get(caseId) == null) {
+                    map.put(caseId, new HashSet<>());
                 }
+                map.get(caseId).add(gene);
             }
+            
             return map;
         } catch (Exception e) {
             e.printStackTrace();
