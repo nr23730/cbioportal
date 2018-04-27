@@ -55,6 +55,7 @@ public class MutPatUtil {
     @Autowired
     private static MutationModelConverter mutationModelConverter;
     
+    @Autowired
     private static MutationDataUtils mutationDataUtils;
     public MutationDataUtils getMutationDataUtils() {
         return mutationDataUtils;
