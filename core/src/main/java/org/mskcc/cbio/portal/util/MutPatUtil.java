@@ -155,9 +155,12 @@ public class MutPatUtil {
                     normal.add(entry.getValue());
                 }
             }
-            groupsMap.put(0, low);
-            groupsMap.put(1, normal);
-            groupsMap.put(2, high);
+//            groupsMap.put(0, low);
+//            groupsMap.put(1, normal);
+//            groupsMap.put(2, high);
+            resultMap.put(0, getMutationMap(profileId, low));
+            resultMap.put(1, getMutationMap(profileId, normal));
+            resultMap.put(2, getMutationMap(profileId, high));
         } else {
             List<String> orderedSampleIds = new ArrayList<>(expressionMap.values());
             int itemsPerGroup = expressionMap.size();
@@ -176,12 +179,10 @@ public class MutPatUtil {
                 }
                 groupsMap.put(i, sampleIdsInGroup);
             }
+            for (int i = 0; i < groups; i++) {
+                resultMap.put(i, getMutationMap(profileId, groupsMap.get(i)));
+            }
         }
-
-        for (int i = 0; i < groups; i++) {
-            resultMap.put(i, getMutationMap(profileId, groupsMap.get(i)));
-        }
-        
         return resultMap;
     }
 
