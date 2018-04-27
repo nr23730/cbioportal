@@ -37,6 +37,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -160,6 +161,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
                 try {
                     Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getMutationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold);
                     for (Map.Entry<Integer, Map<String,Set<String>>> mutationMap: map.entrySet()) {
+                        ArrayNode arrayNode = mapper.createArrayNode();
                         List<List<String>> transactions = new ArrayList<>();
                         for (Map.Entry<String, Set<String>> entry: mutationMap.getValue().entrySet()) {
                             transactions.add(new ArrayList<>(entry.getValue()));
@@ -174,10 +176,11 @@ public class GetMutationPatternsJSON extends HttpServlet {
                             _scores.put("pattern", String.join(", ", itemset.javaItems()));
                             _scores.put("magnitude", itemset.javaItems().size());
                             _scores.put("support", itemset.freq());
-                            fullResultJson.add(_scores);
+                            arrayNode.add(_scores);
                         }
-                        mapper.writeValue(out, fullResultJson);
+                        fullResultJson.add(arrayNode);
                     }
+                    mapper.writeValue(out, fullResultJson);
                 } catch (DaoException e) {
                     System.out.println(e.getMessage());
                     mapper.writeValue(out, new JSONObject());
