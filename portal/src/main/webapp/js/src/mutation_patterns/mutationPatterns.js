@@ -52,8 +52,8 @@ var MutPatView = (function() {
             plotPrefix: "mutpat_plot_"
         },
         dim = {
-            mutpat_table_width: "380px",
-            mutpat_tables_width: "800px",
+            mutpat_table_width: "500px",
+            mutpat_tables_width: "1120px",
             mutpat_plots_width: "750px"
         },
         has_mutation_data = false;
@@ -494,9 +494,9 @@ var MutPatView = (function() {
             // $("#" + Names.tableDivId).addClass("mutpat-plots");
             var tableIdL = Names.tableId + "L";
             var tableIdR = Names.tableId + "R";
-            $("#" + Names.tableDivId).append(
+            $("#" + tableDivIdL).append(
                 "<table id='" + tableIdL + "' class='display mutpat_datatable_" + geneId + "' cellpadding='0' cellspacing='0' border='0' style='float:left'></table>");
-            $("#" + Names.tableDivId).append(
+            $("#" + tableDivIdR).append(
                 "<table id='" + tableIdR + "' class='display mutpat_datatable_" + geneId + "' cellpadding='0' cellspacing='0' border='0' style='float:right'></table>");
         }
 
