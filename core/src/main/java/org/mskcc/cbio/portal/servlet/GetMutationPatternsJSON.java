@@ -190,16 +190,18 @@ public class GetMutationPatternsJSON extends HttpServlet {
             }
         } else {
             StringBuilder fullResutlStr = new StringBuilder();
-            fullResutlStr.append("Group\tSampleID\tMutations\n");
+            fullResutlStr.append("Group\tSampleID\tExpression\tMutations\n");
             GeneticProfile final_gp = DaoGeneticProfile.getGeneticProfileByStableId(profileId);
             if (final_gp != null) {
                 try {
+                    Map<String, Double> expressionMap = MutPatUtil.getExpressionMap(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId);
                     Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getMutationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold);
                     for (int i = 0; i < map.size(); i++ ) {
                         TreeMap<String, Set<String>> treeMap = new TreeMap<>(map.get(i));
                         for (Map.Entry<String, Set<String>> entry: treeMap.entrySet()) {
                             fullResutlStr.append(
                                 i + "\t" +
+                                    expressionMap.get(entry.getKey()) + "\t" +
                                     entry.getKey() + "\t" +
                                     String.join(" ", entry.getValue()) + "\n"
                             );
