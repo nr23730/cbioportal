@@ -400,10 +400,20 @@ var MutPatView = (function() {
                 };
             }  
 
-            function convertData(_result) {
+            function convertData(_result, _groups) {
+                // Get ID for table
+                var id = 0;
+                if (position === "R") {
+                    if (_groups === 0) {
+                        id = 2;
+                    } else {
+                        id = _groups-1;
+                    }                   
+                } 
+                
                 //Convert the format of the callback result to fit datatable
                 mutpatTableArr = [];
-                $.each(_result, function(i, obj) {
+                $.each(_result[id], function(i, obj) {
                     var tmp_arr = [];
                     tmp_arr.push(obj.pattern);
                     tmp_arr.push(obj.magnitude);
@@ -412,18 +422,22 @@ var MutPatView = (function() {
                 });   
             }
 
-            function getMutPatDataCallBack(result, geneId) {
+            function getMutPatDataCallBack(result, groups) {
                 //Hide the loading img
                 $("#" + Names.loadingImgId).empty();
                 if (result.length === 0) {
                     $("#" + Names.tableDivId + position).append("There are no alteration patterns with an support of ?? or higher.");
                     attachDownloadFullResultButton();                    
+                } else if (position === "R" && groups === 1) {
+                    $("#" + Names.tableDivId + position).append("There is only one group to display.");
                 } else {
                     //Render datatable
-                    convertData(result);
+                    convertData(result, groups);
                     overWriteFilters(); 
                     configTable();
-                    attachDownloadFullResultButton();
+                    if ( position === "L" ) {
+                        attachDownloadFullResultButton();
+                    }
                     attachMagnitudeFilter();
                     attachRowListener();
                     initTable();                    
@@ -448,7 +462,7 @@ var MutPatView = (function() {
                         "getMutPat.do", 
                         paramsGetMutPatData, 
                         function(result) {
-                            getMutPatDataCallBack(result, _geneId);
+                            getMutPatDataCallBack(result, paramsGetMutPatData.groups);
                         },
                         "json"
                     );
@@ -477,17 +491,9 @@ var MutPatView = (function() {
                 "<tr>" +
                 "<td width='" + dim.mutpat_tables_width + "' valign='top'>" + 
                 "<div id='" + Names.tableDivId + "'> " +
-                "<table>" +
-                "<tr>" +
-                "<td width='" + dim.mutpat_table_width + "' valign='top' align='left'>" +
-                "<div id='" + tableDivIdL + "'></div></td>" +
-                "<td width='" + dim.mutpat_table_width + "' valign='top' align='right'>" +
-                "<div id='" + tableDivIdR + "'></div></td>" +
-                "</tr>" +
-                "</table>" +
+                "<div id='" + tableDivIdL + "' style='display: inline-block; float: left; width: " + dim.mutpat_table_width + ";' ></div>" +
+                "<div id='" + tableDivIdR + "' style='display: inline-block; float: right; width: " + dim.mutpat_table_width + ";' ></div>" +
                 "</div></td>" +
-                // "<td width='" + dim.mutpat_plots_width + "' valign='top'>" + 
-                // "<div id='" + Names.plotId + "'></div></td>" +
                 "</tr>" +
                 "</table>");
             $("#" + Names.tableDivId).addClass("mutpat-table");

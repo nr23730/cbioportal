@@ -159,23 +159,25 @@ public class GetMutationPatternsJSON extends HttpServlet {
             if (final_gp != null) {
                 try {
                     Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getMutationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold);
-                    List<List<String>> transactions = new ArrayList<>();
-                    for (Map.Entry<String, Set<String>> entry: map.get(0).entrySet()) {
-                        transactions.add(new ArrayList<>(entry.getValue()));
-                    }
-                    
-                    FPGrowth fpg = new FPGrowth().setMinSupport(0.1);
-                    JavaRDD<List<String>> rdd = sc.parallelize(transactions);
-                    FPGrowthModel<String> fpgModel = fpg.run(rdd);
+                    for (Map.Entry<Integer, Map<String,Set<String>>> mutationMap: map.entrySet()) {
+                        List<List<String>> transactions = new ArrayList<>();
+                        for (Map.Entry<String, Set<String>> entry: mutationMap.getValue().entrySet()) {
+                            transactions.add(new ArrayList<>(entry.getValue()));
+                        }
 
-                    for (FPGrowth.FreqItemset<String> itemset: fpgModel.freqItemsets().toJavaRDD().collect()) {
-                        ObjectNode _scores = mapper.createObjectNode();
-                        _scores.put("pattern", String.join(", ", itemset.javaItems()));
-                        _scores.put("magnitude", itemset.javaItems().size());
-                        _scores.put("support", itemset.freq());
-                        fullResultJson.add(_scores);
+                        FPGrowth fpg = new FPGrowth().setMinSupport(0.1);
+                        JavaRDD<List<String>> rdd = sc.parallelize(transactions);
+                        FPGrowthModel<String> fpgModel = fpg.run(rdd);
+
+                        for (FPGrowth.FreqItemset<String> itemset: fpgModel.freqItemsets().toJavaRDD().collect()) {
+                            ObjectNode _scores = mapper.createObjectNode();
+                            _scores.put("pattern", String.join(", ", itemset.javaItems()));
+                            _scores.put("magnitude", itemset.javaItems().size());
+                            _scores.put("support", itemset.freq());
+                            fullResultJson.add(_scores);
+                        }
+                        mapper.writeValue(out, fullResultJson);
                     }
-                    mapper.writeValue(out, fullResultJson);
                 } catch (DaoException e) {
                     System.out.println(e.getMessage());
                     mapper.writeValue(out, new JSONObject());
