@@ -248,11 +248,11 @@ var MutPatView = (function() {
             mutpatTableArr = [], //Data array for the datatable
             mutPatTableInstance = "";
 
-        var MutPatTable = function() {
+        var MutPatTable = function(position) {
 
             function configTable() {
                 //Draw out the markdown of the datatable
-                $("#" + Names.tableId).append(
+                $("#" + Names.tableId + position).append(
                     "<thead style='font-size:70%;' >" +
                     "<tr>" + 
                     "<th>Pattern</th>" +
@@ -263,7 +263,7 @@ var MutPatView = (function() {
                 );
 
                 //Configure the datatable with  jquery
-                mutPatTableInstance = $("#" + Names.tableId).dataTable({
+                mutPatTableInstance = $("#" + Names.tableId + position).dataTable({
                     "sDom": '<"H"f<"mutpat-table-filter-magnitude">>t<"F"i<"datatable-paging"p>>',
                     "bPaginate": true,
                     "sPaginationType": "two_button",
@@ -362,7 +362,7 @@ var MutPatView = (function() {
             }
 
             function attachRowListener() {
-                $("#" + Names.tableId + " tbody tr").live('click', function (event) {
+                $("#" + Names.tableId + position + " tbody tr").live('click', function (event) {
                     //Highlight selected row
                     $(mutPatTableInstance.fnSettings().aoData).each(function (){
                         $(this.nTr).removeClass('row_selected');
@@ -381,8 +381,8 @@ var MutPatView = (function() {
 
             function initTable() {
                 //Init with selecting the first row
-                $('#' + Names.tableId + ' tbody tr:eq(0)').click();
-                $('#' + Names.tableId + ' tbody tr:eq(0)').addClass("row_selected");
+                // $('#' + Names.tableId + position + ' tbody tr:eq(0)').click();
+                // $('#' + Names.tableId + position + ' tbody tr:eq(0)').addClass("row_selected");
             }
 
             //Overwrite some datatable function for custom filtering
@@ -479,8 +479,12 @@ var MutPatView = (function() {
                 "</table>");
             $("#" + Names.tableDivId).addClass("mutpat-table");
             // $("#" + Names.tableDivId).addClass("mutpat-plots");
+            var tableIdL = Names.tableId + "L";
+            var tableIdR = Names.tableId + "R";
             $("#" + Names.tableDivId).append(
-                "<table id='" + Names.tableId + "' class='display mutpat_datatable_" + geneId + "' cellpadding='0' cellspacing='0' border='0'></table>");
+                "<table id='" + tableIdL + "' class='display mutpat_datatable_" + geneId + "' cellpadding='0' cellspacing='0' border='0' style='float:left'></table>");
+            $("#" + Names.tableDivId).append(
+                "<table id='" + tableIdR + "' class='display mutpat_datatable_" + geneId + "' cellpadding='0' cellspacing='0' border='0' style='float:right'></table>");
         }
 
         return {
@@ -494,8 +498,10 @@ var MutPatView = (function() {
                 if (element.length === 0) { //Avoid duplication (see if the subtab instance already exists)
                     assembleNames();
                     drawLayout();
-                    var mutPatTable = new MutPatTable();
-                    mutPatTable.init(geneId);
+                    var mutPatTableLeft = new MutPatTable("L");
+                    mutPatTableLeft.init(geneId);
+                    var mutPatTableRight = new MutPatTable("R");
+                    mutPatTableRight.init(geneId);
                 }
             }
         };
