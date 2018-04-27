@@ -55,14 +55,7 @@ public class MutPatUtil {
     @Autowired
     private static MutationModelConverter mutationModelConverter;
     
-    @Autowired
-    private static MutationDataUtils mutationDataUtils;
-    public MutationDataUtils getMutationDataUtils() {
-        return mutationDataUtils;
-    }
-    public void setMutationDataUtils(MutationDataUtils mutationDataUtils) {
-        this.mutationDataUtils = mutationDataUtils;
-    }
+    private static MutationDataUtils mutationDataUtils = new MutationDataUtils();
     
     @SuppressWarnings("Duplicates")
     public static ArrayList<String> getSampleIds(String sampleSetId, String sampleIdsKeys) {
