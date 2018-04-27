@@ -409,15 +409,6 @@ var MutPatView = (function() {
                     tmp_arr.push(obj.support);
                     mutpatTableArr.push(tmp_arr);
                 });   
-                
-                
-                // Dummy Data for Mockup
-                // mutpatTableArr.push(["TP53, TTN", 2, 0.52]);
-                // mutpatTableArr.push(["CSMD3, TTN", 2, 0.30]);
-                // mutpatTableArr.push(["NCOA3, TTN", 2, 0.24]);
-                // mutpatTableArr.push(["TTN", 1, 0.74]);
-                // mutpatTableArr.push(["TP53", 1, 0.76]);
-                // mutpatTableArr.push(["PDE4DIP, TP53, TTN", 3, 0.22]);
             }
 
             function getMutPatDataCallBack(result, geneId) {

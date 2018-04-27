@@ -91,7 +91,7 @@
 <div class="section" id="mutpat">
     <p>
         <div id='mutpat-profile-selector-dropdown' style="margin-top:10px;"></div>
-        <div id='mutpat-groups-selector-dropdown' style="margin-left:10px;"></div>
+        <div id='mutpat-groups-selector-dropdown' style="margin-bottom:5px;"></div>
         These tables lists the genes patterns in the groups of lowest and highest expressed query genes. 
         <img src='images/help.png' id='mutpat-help' alt='help'>
     </p>
