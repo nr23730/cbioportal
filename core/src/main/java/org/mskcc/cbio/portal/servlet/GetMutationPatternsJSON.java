@@ -173,7 +173,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
 
                         for (FPGrowth.FreqItemset<String> itemset: fpgModel.freqItemsets().toJavaRDD().collect()) {
                             ObjectNode _scores = mapper.createObjectNode();
-                            _scores.put("pattern", String.join(", ", itemset.javaItems()));
+                            _scores.put("pattern", String.join(" ", itemset.javaItems()));
                             _scores.put("magnitude", itemset.javaItems().size());
                             _scores.put("support", itemset.freq());
                             arrayNode.add(_scores);
@@ -201,8 +201,8 @@ public class GetMutationPatternsJSON extends HttpServlet {
                         for (Map.Entry<String, Set<String>> entry: treeMap.entrySet()) {
                             fullResutlStr.append(
                                 i + "\t" +
-                                    expressionMap.get(entry.getKey()) + "\t" +
                                     entry.getKey() + "\t" +
+                                    expressionMap.get(entry.getKey()) + "\t" +
                                     String.join(" ", entry.getValue()) + "\n"
                             );
                         }
