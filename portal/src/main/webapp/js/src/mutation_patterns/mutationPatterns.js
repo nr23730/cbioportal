@@ -590,7 +590,7 @@ var MutPatView = (function() {
             Names.loadingImgId = Prefix.loadingImgPrefix + safeGeneId;
             Names.tableId = Prefix.tablePrefix + safeGeneId + jQuery.now();
             Names.tableDivId = Prefix.tableDivPrefix + safeGeneId;
-            // Names.plotId = Prefix.plotPrefix + safeGeneId;
+            Names.plotId = Prefix.plotPrefix + safeGeneId;
         }
 
         function drawLayout() {
