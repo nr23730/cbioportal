@@ -73,7 +73,7 @@
         width: 100%;
     }
     #mutpat .mutpat-plots {
-        float: left;
+        float: bottom;
     }
     #mutpat p {
         font-size: 12px;

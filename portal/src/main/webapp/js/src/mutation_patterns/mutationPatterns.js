@@ -54,7 +54,8 @@ var MutPatView = (function() {
         dim = {
             mutpat_table_width: "500px",
             mutpat_tables_width: "1120px",
-            mutpat_plots_width: "750px"
+            mutpat_plots_width: "1120px",
+            mutpat_plots_height: "100px"
         },
         has_mutation_data = false;
     //Containers    
@@ -470,6 +471,117 @@ var MutPatView = (function() {
             };          
             
         }; //Closing MutPatTable
+        
+        var MutPatPlot = function() {
+    
+            // dimensions
+            var margin = {top: 20, right: 20, bottom: 30, left: 40},
+                svg_dx = dim.mutpat_plots_width,
+                svg_dy = dim.mutpat_plots_height,
+                chart_dx = svg_dx - margin.right - margin.left,
+                chart_dy = svg_dy - margin.top - margin.bottom;
+
+
+            var d = [];
+            var circles = {};
+            var x_axis = {};
+            var svg = {};
+
+            // x position
+            var xScale = d3.scaleLinear()
+                .domain(d3.extent(d, function(d) { return d.x; }))
+                .range([chart_dx, margin.right]);
+
+            // x-axis
+            var xAxis = d3.axis.axisBottom(xScale);
+
+
+            function zoom() {
+
+                // re-scale x axis during zoom;
+                x_axis.transition()
+                    .duration(50)
+                    .call(xAxis.scale(d3.event.transform.rescaleX(xScale)));
+
+                // re-draw circles using new x-axis scale;
+                var new_xScale = d3.event.transform.rescaleX(xScale);
+                circles.attr("cx", function(d) { return new_xScale(d.x); });
+            }
+            
+            function convertData(_result, _groups) {
+                d = [];
+                $.each(_result, function(i, obj) {
+                    var datapoint = {
+                        x: obj.Expression,
+                        y: 1,
+                        qtip: obj.SampleId
+                    };
+                    d.push(datapoint);
+                });
+            }
+
+            function getDataCallBack(result, groups) {
+                
+                convertData(result, groups);
+
+                // zoom
+                svg = d3.select("#" + Names.plotsId)
+                    .append("svg")
+                    .attr("width", svg_dx)
+                    .attr("height", svg_dy)
+                    .call(d3.zoom().on("zoom", zoom));
+
+
+
+                // add x-axis
+                x_axis = svg.append("g")
+                    .attr("id", "x_axis")
+                    .attr("transform", "translate(75,0)")
+                    .call(xAxis);
+
+
+                // plot data
+                circles = svg.append("g")
+                    .attr("id", "circles")
+                    .attr("transform", "translate(200, 0)")
+                    .selectAll("circle")
+                    .data(d)
+                    .enter()
+                    .append("circle")
+                    .attr("r", 4)
+                    .attr("cx", function(d) { return xScale(d.x); })
+                    .attr("cy", function(d) { return d.y; })
+                    // .style("fill", function(d) {
+                    //     var norm_color = colorScale(d[1]);
+                    //     return d3.interpolateInferno(norm_color)
+                    // });
+                
+            }
+
+            return {
+                init: function(_geneId) {
+                    var paramsGetMutPatData = {
+                        cancer_study_id: window.QuerySession.getCancerStudyIds()[0],
+                        gene: _geneId,
+                        profile_id: $("#mutpat-profile-selector :selected").val(),
+                        groups: 1,
+                        zscore_threshold: window.QuerySession.getZScoreThreshold(),
+                        case_set_id: window.QuerySession.getCaseSetId(),
+                        case_ids_key: window.QuerySession.getCaseIdsKey(),
+                        is_full_result: "true"
+                    };
+                    $.post(
+                        "getMutPat.do",
+                        paramsGetMutPatData,
+                        function(result) {
+                            getDataCallBack(result, paramsGetMutPatData.groups);
+                        },
+                        "json"
+                    );
+                }
+            };
+
+        }; //Closing MutPatPlot
 
         function assembleNames() {
             //figure out div id
@@ -494,6 +606,9 @@ var MutPatView = (function() {
                 "<div id='" + tableDivIdL + "' style='display: inline-block; float: left; width: " + dim.mutpat_table_width + ";' ></div>" +
                 "<div id='" + tableDivIdR + "' style='display: inline-block; float: right; width: " + dim.mutpat_table_width + ";' ></div>" +
                 "</div></td>" +
+                "</tr>" +
+                "<tr>" +
+                "<div id='" + Names.plotsId + "'> " +
                 "</tr>" +
                 "</table>");
             $("#" + Names.tableDivId).addClass("mutpat-table");
