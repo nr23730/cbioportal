@@ -488,12 +488,12 @@ var MutPatView = (function() {
             var svg = {};
 
             // x position
-            var xScale = d3.scaleLinear()
+            var xScale = d3.scale.linear()
                 .domain(d3.extent(d, function(d) { return d.x; }))
                 .range([chart_dx, margin.right]);
 
             // x-axis
-            var xAxis = d3.axis.axisBottom(xScale);
+            var xAxis = d3.svg.axis().scale(xScale).tickFormat(function(d) { return d.x;}); // d3.axis.axisBottom(xScale);
 
 
             function zoom() {
@@ -501,11 +501,48 @@ var MutPatView = (function() {
                 // re-scale x axis during zoom;
                 x_axis.transition()
                     .duration(50)
-                    .call(xAxis.scale(d3.event.transform.rescaleX(xScale)));
+                    .call(xAxis.scale(d3.event.transform.rescale(xScale)));
 
                 // re-draw circles using new x-axis scale;
-                var new_xScale = d3.event.transform.rescaleX(xScale);
+                var new_xScale = d3.event.transform.rescale(xScale);
                 circles.attr("cx", function(d) { return new_xScale(d.x); });
+            }
+
+            function addQtips() {
+
+                elem.dotsGroup.selectAll('circles').each(
+                    function(d) {
+                        $(this).qtip(
+                            {
+                                content: {text: "<font size=2>" + d.qtip},
+                                style: { classes: 'qtip-light qtip-rounded qtip-shadow qtip-lightyellow' },
+                                show: {event: "mouseover"},
+                                hide: {fixed:true, delay: 100, event: "mouseout"},
+                                position: {my:'left bottom',at:'top right', viewport: $(window)}
+                            }
+                        );
+                    }
+                );
+
+                //Hover Animation
+                var mouseOn = function() {
+                    var dot = d3.select(this);
+                    dot.transition()
+                        .ease("elastic")
+                        .duration(600)
+                        .delay(100)
+                        .attr("d", d3.svg.symbol().size(style.size * 10).type(style.shape));
+                };
+                var mouseOff = function(d) {
+                    var dot = d3.select(this);
+                    dot.transition()
+                        .ease("elastic")
+                        .duration(600)
+                        .delay(100)
+                        .attr("d", d3.svg.symbol().size(style.size).type(style.shape));
+                };
+                elem.dotsGroup.selectAll("circles").attr('pointer-events', 'all').on("mouseover", mouseOn);
+                elem.dotsGroup.selectAll("circles").attr('pointer-events', 'all').on("mouseout", mouseOff);
             }
             
             function convertData(_result, _groups) {
@@ -551,6 +588,7 @@ var MutPatView = (function() {
                     .attr("r", 4)
                     .attr("cx", function(d) { return xScale(d.x); })
                     .attr("cy", function(d) { return d.y; })
+                    .attr()
                     // .style("fill", function(d) {
                     //     var norm_color = colorScale(d[1]);
                     //     return d3.interpolateInferno(norm_color)
