@@ -638,6 +638,8 @@ var MutPatView = (function() {
                     mutPatTableLeft.init(geneId);
                     var mutPatTableRight = new MutPatTable("R");
                     mutPatTableRight.init(geneId);
+                    var mutPatPlot = new MutPatPlot();
+                    mutPatPlot.init(geneId);
                 }
             }
         };
