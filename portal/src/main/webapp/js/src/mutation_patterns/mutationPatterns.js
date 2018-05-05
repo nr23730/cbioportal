@@ -525,7 +525,7 @@ var MutPatView = (function() {
                 convertData(result, groups);
 
                 // zoom
-                svg = d3.select("#" + Names.plotsId)
+                svg = d3.select("#" + Names.plotId)
                     .append("svg")
                     .attr("width", svg_dx)
                     .attr("height", svg_dy)
@@ -608,7 +608,9 @@ var MutPatView = (function() {
                 "</div></td>" +
                 "</tr>" +
                 "<tr>" +
-                "<div id='" + Names.plotsId + "'> " +
+                "<td width='" + dim.mutpat_plots_width + "' valign='top'>" +
+                "<div id='" + Names.plotId + "'> " +
+                "</div></td>" +
                 "</tr>" +
                 "</table>");
             $("#" + Names.tableDivId).addClass("mutpat-table");
