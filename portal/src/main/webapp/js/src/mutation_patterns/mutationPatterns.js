@@ -339,7 +339,7 @@ var MutPatView = (function() {
                     "<input type='hidden' name='zscore_threshold' value='" + window.QuerySession.getZScoreThreshold() + "'>" +
                     "<input type='hidden' name='case_set_id' value='" + window.QuerySession.getCaseSetId() + "'>" +
                     "<input type='hidden' name='case_ids_key' value='" + window.QuerySession.getCaseIdsKey() + "'>" +
-                    "<input type='hidden' name='is_full_result' value='true'>" +
+                    "<input type='hidden' name='response_type' value='download'>" +
                     "<input type='submit' value='Download Full Results'></form>";
                 $("#" + Names.tableDivId).append(downloadFullResultForm);            
             }
@@ -457,7 +457,7 @@ var MutPatView = (function() {
                          zscore_threshold: window.QuerySession.getZScoreThreshold(),
                          case_set_id: window.QuerySession.getCaseSetId(),
                          case_ids_key: window.QuerySession.getCaseIdsKey(),
-                         is_full_result: "false"
+                         response_type: "patterns"
                     };
                     $.post(
                         "getMutPat.do", 
@@ -594,6 +594,8 @@ var MutPatView = (function() {
                     //     return d3.interpolateInferno(norm_color)
                     // });
                 
+                addQtips();
+                
             }
 
             return {
@@ -606,7 +608,7 @@ var MutPatView = (function() {
                         zscore_threshold: window.QuerySession.getZScoreThreshold(),
                         case_set_id: window.QuerySession.getCaseSetId(),
                         case_ids_key: window.QuerySession.getCaseIdsKey(),
-                        is_full_result: "true"
+                        response_type: "mutations"
                     };
                     $.post(
                         "getMutPat.do",

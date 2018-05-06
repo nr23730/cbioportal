@@ -145,7 +145,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
         String profileId = httpServletRequest.getParameter("profile_id");
         String caseSetId = httpServletRequest.getParameter("case_set_id");
         String caseIdsKey = httpServletRequest.getParameter("case_ids_key");
-        boolean isFullResult = Boolean.parseBoolean(httpServletRequest.getParameter("is_full_result"));
+        String responseType = httpServletRequest.getParameter("response_type");
         
         int groups = NumberUtils.toInt(httpServletRequest.getParameter("groups"), 1);
         double zScoreThreshold = NumberUtils.toDouble(httpServletRequest.getParameter("zscore_threshold"), 2.0);
@@ -155,40 +155,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
         CanonicalGene geneObj = daoGeneOptimized.getGene(geneSymbol);
         Long queryGeneId = geneObj.getEntrezGeneId();
 
-        if (!isFullResult) {
-            GeneticProfile final_gp = DaoGeneticProfile.getGeneticProfileByStableId(profileId);
-            if (final_gp != null) {
-                try {
-                    Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getMutationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold);
-                    for (Map.Entry<Integer, Map<String,Set<String>>> mutationMap: map.entrySet()) {
-                        ArrayNode arrayNode = mapper.createArrayNode();
-                        List<List<String>> transactions = new ArrayList<>();
-                        for (Map.Entry<String, Set<String>> entry: mutationMap.getValue().entrySet()) {
-                            transactions.add(new ArrayList<>(entry.getValue()));
-                        }
-
-                        FPGrowth fpg = new FPGrowth().setMinSupport(0.1);
-                        JavaRDD<List<String>> rdd = sc.parallelize(transactions);
-                        FPGrowthModel<String> fpgModel = fpg.run(rdd);
-
-                        for (FPGrowth.FreqItemset<String> itemset: fpgModel.freqItemsets().toJavaRDD().collect()) {
-                            ObjectNode _scores = mapper.createObjectNode();
-                            _scores.put("pattern", String.join(" ", itemset.javaItems()));
-                            _scores.put("magnitude", itemset.javaItems().size());
-                            _scores.put("support", itemset.freq());
-                            arrayNode.add(_scores);
-                        }
-                        fullResultJson.add(arrayNode);
-                    }
-                    mapper.writeValue(out, fullResultJson);
-                } catch (DaoException e) {
-                    System.out.println(e.getMessage());
-                    mapper.writeValue(out, new JSONObject());
-                }
-            } else {
-            	 mapper.writeValue(out, new JSONObject());
-            }
-        } else {
+        if (responseType == "download") {
             StringBuilder fullResutlStr = new StringBuilder();
             fullResutlStr.append("Group\tSampleID\tExpression\tMutations\n");
             GeneticProfile final_gp = DaoGeneticProfile.getGeneticProfileByStableId(profileId);
@@ -224,6 +191,56 @@ public class GetMutationPatternsJSON extends HttpServlet {
                 }
             } else {
                 JSONValue.writeJSONString(new JSONObject(), out);
+            }
+        } else {
+            GeneticProfile final_gp = DaoGeneticProfile.getGeneticProfileByStableId(profileId);
+            if (final_gp != null) {
+                try {
+                    if (responseType == "patterns") {
+                        Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getMutationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold);
+                        for (Map.Entry<Integer, Map<String,Set<String>>> mutationMap: map.entrySet()) {
+                            ArrayNode arrayNode = mapper.createArrayNode();
+                            List<List<String>> transactions = new ArrayList<>();
+                            for (Map.Entry<String, Set<String>> entry: mutationMap.getValue().entrySet()) {
+                                transactions.add(new ArrayList<>(entry.getValue()));
+                            }
+
+                            FPGrowth fpg = new FPGrowth().setMinSupport(0.1);
+                            JavaRDD<List<String>> rdd = sc.parallelize(transactions);
+                            FPGrowthModel<String> fpgModel = fpg.run(rdd);
+
+                            for (FPGrowth.FreqItemset<String> itemset: fpgModel.freqItemsets().toJavaRDD().collect()) {
+                                ObjectNode _scores = mapper.createObjectNode();
+                                _scores.put("pattern", String.join(" ", itemset.javaItems()));
+                                _scores.put("magnitude", itemset.javaItems().size());
+                                _scores.put("support", itemset.freq());
+                                arrayNode.add(_scores);
+                            }
+                            fullResultJson.add(arrayNode);
+                        }
+                        mapper.writeValue(out, fullResultJson);
+                    } else {
+                        Map<String, Double> expressionMap = MutPatUtil.getExpressionMap(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId);
+                        Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getMutationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold);
+                        for (int i = 0; i < map.size(); i++ ) {
+                            TreeMap<String, Set<String>> treeMap = new TreeMap<>(map.get(i));
+                            for (Map.Entry<String, Set<String>> entry: treeMap.entrySet()) {
+                                ObjectNode _scores = mapper.createObjectNode();
+                                _scores.put("Group", i);
+                                _scores.put("SampleId", entry.getKey());
+                                _scores.put("Expression", expressionMap.get(entry.getKey()));
+                                _scores.put("Mutations", String.join(" ", entry.getValue()));
+                                fullResultJson.add(_scores);
+                            }
+                        }
+                        mapper.writeValue(out, fullResultJson);
+                    }
+                } catch (DaoException e) {
+                    System.out.println(e.getMessage());
+                    mapper.writeValue(out, new JSONObject());
+                }
+            } else {
+                mapper.writeValue(out, new JSONObject());
             }
         }
 
