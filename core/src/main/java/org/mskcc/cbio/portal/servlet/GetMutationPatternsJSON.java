@@ -145,7 +145,8 @@ public class GetMutationPatternsJSON extends HttpServlet {
         String profileId = httpServletRequest.getParameter("profile_id");
         String caseSetId = httpServletRequest.getParameter("case_set_id");
         String caseIdsKey = httpServletRequest.getParameter("case_ids_key");
-        String responseType = httpServletRequest.getParameter("response_type");
+        boolean isDownload = Boolean.parseBoolean(httpServletRequest.getParameter("is_download"));
+        boolean getPatterns = Boolean.parseBoolean(httpServletRequest.getParameter("get_patterns"));
         
         int groups = NumberUtils.toInt(httpServletRequest.getParameter("groups"), 1);
         double zScoreThreshold = NumberUtils.toDouble(httpServletRequest.getParameter("zscore_threshold"), 2.0);
@@ -155,7 +156,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
         CanonicalGene geneObj = daoGeneOptimized.getGene(geneSymbol);
         Long queryGeneId = geneObj.getEntrezGeneId();
 
-        if (responseType == "download") {
+        if (isDownload) {
             StringBuilder fullResutlStr = new StringBuilder();
             fullResutlStr.append("Group\tSampleID\tExpression\tMutations\n");
             GeneticProfile final_gp = DaoGeneticProfile.getGeneticProfileByStableId(profileId);
@@ -196,7 +197,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
             GeneticProfile final_gp = DaoGeneticProfile.getGeneticProfileByStableId(profileId);
             if (final_gp != null) {
                 try {
-                    if (responseType == "patterns") {
+                    if (getPatterns) {
                         Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getMutationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold);
                         for (Map.Entry<Integer, Map<String,Set<String>>> mutationMap: map.entrySet()) {
                             ArrayNode arrayNode = mapper.createArrayNode();

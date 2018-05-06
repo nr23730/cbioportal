@@ -339,7 +339,8 @@ var MutPatView = (function() {
                     "<input type='hidden' name='zscore_threshold' value='" + window.QuerySession.getZScoreThreshold() + "'>" +
                     "<input type='hidden' name='case_set_id' value='" + window.QuerySession.getCaseSetId() + "'>" +
                     "<input type='hidden' name='case_ids_key' value='" + window.QuerySession.getCaseIdsKey() + "'>" +
-                    "<input type='hidden' name='response_type' value='download'>" +
+                    "<input type='hidden' name='is_download' value='true'>" +
+                    "<input type='hidden' name='get_patterns' value='false'>" +
                     "<input type='submit' value='Download Full Results'></form>";
                 $("#" + Names.tableDivId).append(downloadFullResultForm);            
             }
@@ -457,7 +458,8 @@ var MutPatView = (function() {
                          zscore_threshold: window.QuerySession.getZScoreThreshold(),
                          case_set_id: window.QuerySession.getCaseSetId(),
                          case_ids_key: window.QuerySession.getCaseIdsKey(),
-                         response_type: "patterns"
+                         is_download: "false",
+                         get_patterns: "true"
                     };
                     $.post(
                         "getMutPat.do", 
@@ -566,7 +568,7 @@ var MutPatView = (function() {
                     .append("svg")
                     .attr("width", svg_dx)
                     .attr("height", svg_dy)
-                    .call(d3.zoom().on("zoom", zoom));
+                    .call(d3.behavior.zoom().on("zoom", zoom));
 
 
 
@@ -608,7 +610,8 @@ var MutPatView = (function() {
                         zscore_threshold: window.QuerySession.getZScoreThreshold(),
                         case_set_id: window.QuerySession.getCaseSetId(),
                         case_ids_key: window.QuerySession.getCaseIdsKey(),
-                        response_type: "mutations"
+                        is_download: "false",
+                        get_patterns: "false"
                     };
                     $.post(
                         "getMutPat.do",
