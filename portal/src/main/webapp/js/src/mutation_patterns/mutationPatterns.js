@@ -602,7 +602,7 @@ var MutPatView = (function() {
                         cancer_study_id: window.QuerySession.getCancerStudyIds()[0],
                         gene: _geneId,
                         profile_id: $("#mutpat-profile-selector :selected").val(),
-                        groups: 1,
+                        groups: $("#mutpat-groups-selector :selected").val(),
                         zscore_threshold: window.QuerySession.getZScoreThreshold(),
                         case_set_id: window.QuerySession.getCaseSetId(),
                         case_ids_key: window.QuerySession.getCaseIdsKey(),
