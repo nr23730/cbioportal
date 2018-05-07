@@ -55,7 +55,7 @@ var MutPatView = (function() {
             mutpat_table_width: "500px",
             mutpat_tables_width: "1120px",
             mutpat_plots_width: "1120px",
-            mutpat_plots_height: "400px"
+            mutpat_plots_height: "200px"
         },
         has_mutation_data = false;
     //Containers    
@@ -478,6 +478,7 @@ var MutPatView = (function() {
     
             // dimensions
             var margin = {top: 20, right: 20, bottom: 30, left: 40},
+                style = {size : 2, shape: "circle"},
                 svg_dx = parseInt(dim.mutpat_plots_width),
                 svg_dy = parseInt(dim.mutpat_plots_height),
                 chart_dx = svg_dx - margin.right - margin.left,
@@ -494,8 +495,17 @@ var MutPatView = (function() {
             var xScale = {};
             var yScale = {};
 
-            
 
+            var tooltip = d3.select("#" + Names.plotId)
+                .append("div")
+                .style("position", "absolute")
+                .style("z-index", "10")
+                // .style("background-color", "lightyellow")
+                // .style("padding", "4px")
+                // .style("border-radius", "4px")
+                // .style("text-align", "center")
+                .attr("classes", "qtip-light qtip-rounded qtip-shadow qtip-lightyellow")
+                .style("visibility", "hidden");
             
 
             // function zoom() {
@@ -512,23 +522,25 @@ var MutPatView = (function() {
 
             function addQtips() {
 
-                d3.select("#" + Names.plotId).selectAll('circle').each(
-                    function(d) {
-                        $(this).qtip(
-                            {
-                                content: {text: "<font size=2>" + d.qtip},
-                                style: { classes: 'qtip-light qtip-rounded qtip-shadow qtip-lightyellow' },
-                                show: {event: "mouseover"},
-                                hide: {fixed:true, delay: 100, event: "mouseout"},
-                                position: {my:'left bottom',at:'top right', viewport: $(window)}
-                            }
-                        );
-                    }
-                );
+                // d3.select("#" + Names.plotId).selectAll('circle').each(
+                //     function(d) {
+                //         $(this).qtip(
+                //             {
+                //                 content: {text: "<font size=2>" + d.qtip},
+                //                 style: { classes: 'qtip-light qtip-rounded qtip-shadow qtip-lightyellow' },
+                //                 show: {event: "mouseover"},
+                //                 hide: {fixed:true, delay: 100, event: "mouseout"},
+                //                 position: {my:'left bottom',at:'top right', viewport: $(window)}
+                //             }
+                //         );
+                //     }
+                // );
 
                 //Hover Animation
                 var mouseOn = function() {
                     var dot = d3.select(this);
+                    var data = dot.datum();
+                    tooltip.style("visibility", "visible").text("<b>" + data.qtip + "</b><br>" + data.x + "<br>" + data.y);
                     dot.transition()
                         .ease("elastic")
                         .duration(600)
@@ -537,6 +549,7 @@ var MutPatView = (function() {
                 };
                 var mouseOff = function(d) {
                     var dot = d3.select(this);
+                    tooltip.style("visibility", "hidden");
                     dot.transition()
                         .ease("elastic")
                         .duration(600)
@@ -574,7 +587,7 @@ var MutPatView = (function() {
                     .range([margin.left, chart_dx]);
                 yScale = d3.scale.linear()
                     .domain([
-                        d3.min(d, function(d) {return d.y;}),
+                        0,
                         d3.max(d, function(d) {return d.y;})
                     ])
                     .range([chart_dy, margin.bottom]);
@@ -595,7 +608,7 @@ var MutPatView = (function() {
                 // add axes
                 x_axis = svg.append("g")
                     .attr("id", "x_axis")
-                    .attr("transform", "translate(0," + margin.bottom + ")")
+                    .attr("transform", "translate(0," + (svg_dy - margin.bottom) + ")")
                     // .attr("transform", "translate(75,0)")
                     .call(xAxis);
                 y_axis = svg.append("g")
@@ -613,9 +626,13 @@ var MutPatView = (function() {
                     .data(d)
                     .enter()
                     .append("circle")
-                    .attr("r", 1)
+                    .attr("r", style.size)
                     .attr("cx", function(d) { return xScale(d.x); })
-                    .attr("cy", function(d) { return yScale(d.y); });
+                    .attr("cy", function(d) { return yScale(d.y); })
+                    .on("mousemove", function() {
+                        return tooltip.style("top", (event.pageY - 30) + "px")
+                            .style("left", event.pageX + "px");
+                    });
                     // .attr()
                     // .style("fill", function(d) {
                     //     var norm_color = colorScale(d[1]);
