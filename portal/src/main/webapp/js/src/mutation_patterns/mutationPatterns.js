@@ -331,7 +331,7 @@ var MutPatView = (function() {
 
             function attachDownloadFullResultButton() {
                 //Append download full result button at the bottom of the table
-                var downloadFullResultForm = "<form style='float:bottom;' action='getMutPat.do' method='post'>" +
+                var downloadFullResultForm = "<form style='float:right;' action='getMutPat.do' method='post'>" +
                     "<input type='hidden' name='cancer_study_id' value='" + window.QuerySession.getCancerStudyIds()[0] + "'>" +
                     "<input type='hidden' name='gene' value='" + geneId + "'>" +
                     "<input type='hidden' name='profile_id' value='" + $("#mutpat-profile-selector :selected").val() + "'>" + 
@@ -342,7 +342,7 @@ var MutPatView = (function() {
                     "<input type='hidden' name='is_download' value='true'>" +
                     "<input type='hidden' name='get_patterns' value='false'>" +
                     "<input type='submit' value='Download Full Results'></form>";
-                $("#" + Names.tableDivId).append(downloadFullResultForm);            
+                $("#" + Names.divId).append(downloadFullResultForm);            
             }
 
             function attachMagnitudeFilter() { 
@@ -477,7 +477,7 @@ var MutPatView = (function() {
         var MutPatPlot = function() {
     
             // dimensions
-            var margin = {top: 20, right: 20, bottom: 30, left: 40},
+            var margin = {top: 0, right: 0, bottom: 0, left: 0},
                 style = {size : 2, shape: "circle"},
                 svg_dx = parseInt(dim.mutpat_plots_width),
                 svg_dy = parseInt(dim.mutpat_plots_height),
@@ -541,11 +541,11 @@ var MutPatView = (function() {
                     var dot = d3.select(this);
                     var data = dot.datum();
                     tooltip.style("visibility", "visible")
-                        .style("top", (dot.cy - 5) + "px")
-                        .style("left", (dot.cx + 5) + "px")
+                        .style("top", (parseFloat(dot.attr("cy")) - 5) + "px")
+                        .style("left", (parseFloat(dot.attr("cx")) + 5) + "px")
                         .html("<b>" + data.qtip + "</b><br>" + data.x + "<br>" + data.y);
                     dot.transition()
-                        .ease("elastic")
+                        .ease("linear")
                         .duration(600)
                         .delay(100)
                         .attr("r", (style.size * 10));
@@ -554,7 +554,7 @@ var MutPatView = (function() {
                     var dot = d3.select(this);
                     tooltip.style("visibility", "hidden");
                     dot.transition()
-                        .ease("elastic")
+                        .ease("linear")
                         .duration(600)
                         .delay(100)
                         .attr("r", style.size);
@@ -696,7 +696,7 @@ var MutPatView = (function() {
                 "</tr>" +
                 "<tr>" +
                 "<td width='" + dim.mutpat_plots_width + "' valign='top'>" +
-                "<div id='" + Names.plotId + "'> " +
+                "<div id='" + Names.plotId + "' style='margin-top: 20px'> " +
                 "</div></td>" +
                 "</tr>" +
                 "</table>");
