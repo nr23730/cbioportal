@@ -480,8 +480,8 @@ var MutPatView = (function() {
             var margin = {top: 20, right: 20, bottom: 30, left: 40},
                 svg_dx = dim.mutpat_plots_width,
                 svg_dy = dim.mutpat_plots_height,
-                chart_dx = svg_dx - margin.right - margin.left,
-                chart_dy = svg_dy - margin.top - margin.bottom;
+                chart_dx = parseInt(svg_dx) - margin.right - margin.left,
+                chart_dy = parseInt(svg_dy) - margin.top - margin.bottom;
 
 
             var d = [];
