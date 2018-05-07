@@ -214,7 +214,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
                                 ObjectNode _scores = mapper.createObjectNode();
                                 _scores.put("pattern", String.join(" ", itemset.javaItems()));
                                 _scores.put("magnitude", itemset.javaItems().size());
-                                _scores.put("support", itemset.freq()/transactions.size());
+                                _scores.put("support", (double)itemset.freq()/(double)transactions.size());
                                 arrayNode.add(_scores);
                             }
                             fullResultJson.add(arrayNode);
