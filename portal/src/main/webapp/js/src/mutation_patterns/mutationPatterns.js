@@ -629,7 +629,7 @@ var MutPatView = (function() {
                 // plot data
                 circles = svg.append("g")
                     .attr("id", "circles")
-                    .attr("transform", "translate(200, 0)")
+                    // .attr("transform", "translate(200, 0)")
                     .selectAll("circle")
                     .data(d)
                     .enter()
