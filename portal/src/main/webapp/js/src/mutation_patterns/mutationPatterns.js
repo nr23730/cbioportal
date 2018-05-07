@@ -625,7 +625,7 @@ var MutPatView = (function() {
                     .call(xAxis)
                     .append("text")
                     .attr("class", "label")
-                    .attr("x", width/2)
+                    .attr("x", chart_dx / 2.0)
                     .attr("y", 28)
                     .style("text-anchor", "end")
                     .text("Expression");
@@ -639,7 +639,7 @@ var MutPatView = (function() {
                     .attr("class", "label")
                     .attr("transform", "rotate(-90)")
                     .attr("y", -40)
-                    .attr("x", -(chart_dy / 2))
+                    .attr("x", -(chart_dy / 2.0))
                     .attr("dy", ".71em")
                     .style("text-anchor", "end")
                     .text("Mutation Count");
