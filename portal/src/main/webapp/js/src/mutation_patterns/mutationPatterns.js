@@ -567,13 +567,16 @@ var MutPatView = (function() {
                 d = [];
                 $.each(_result, function(i, obj) {
                     var mutationArr = obj.Mutations.split(" ");
-                    var datapoint = {
-                        x: parseFloat(obj.Expression),
-                        y: mutationArr.length,
-                        mutations: mutationArr,
-                        qtip: obj.SampleId
-                    };
-                    d.push(datapoint);
+                    var expression = parseFloat(obj.Expression);
+                    if(!isNaN(expression)) {
+                        var datapoint = {
+                            x: expression,
+                            y: mutationArr.length,
+                            mutations: mutationArr,
+                            qtip: obj.SampleId
+                        };
+                        d.push(datapoint);
+                    }
                 });
             }
 
