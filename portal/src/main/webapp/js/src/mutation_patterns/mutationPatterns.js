@@ -331,7 +331,7 @@ var MutPatView = (function() {
 
             function attachDownloadFullResultButton() {
                 //Append download full result button at the bottom of the table
-                var downloadFullResultForm = "<form style='float:right;' action='getMutPat.do' method='post'>" +
+                var downloadFullResultForm = "<form style='float:bottom;' action='getMutPat.do' method='post'>" +
                     "<input type='hidden' name='cancer_study_id' value='" + window.QuerySession.getCancerStudyIds()[0] + "'>" +
                     "<input type='hidden' name='gene' value='" + geneId + "'>" +
                     "<input type='hidden' name='profile_id' value='" + $("#mutpat-profile-selector :selected").val() + "'>" + 
