@@ -419,7 +419,7 @@ var MutPatView = (function() {
                     var tmp_arr = [];
                     tmp_arr.push(obj.pattern);
                     tmp_arr.push(obj.magnitude);
-                    tmp_arr.push(obj.support);
+                    tmp_arr.push(obj.support.toFixed(3));
                     mutpatTableArr.push(tmp_arr);
                 });   
             }
