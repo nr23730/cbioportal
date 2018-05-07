@@ -541,8 +541,8 @@ var MutPatView = (function() {
                     var dot = d3.select(this);
                     var data = dot.datum();
                     tooltip.style("visibility", "visible")
-                        .style("top", dot.attr("cy"))
-                        .style("left", dot.attr("cx"))
+                        .style("top", (d3.event.pageY + 5) + "px")
+                        .style("left", (d3.event.pageX + 5) + "px")
                         .html("<b>" + data.qtip + "</b><br>" + data.x + "<br>" + data.y);
                     dot.transition()
                         .ease("linear")
@@ -585,10 +585,16 @@ var MutPatView = (function() {
                 convertData(result, groups);
 
                 // Scales
+                var xMin = d3.min(d, function(d) {return d.x;}),
+                    xMax = d3.max(d, function(d) {return d.x;}),
+                    xRange = xMax-xMin,
+                    paddingRange = 0.05,
+                    paddingX = xRange*paddingRange;
+                
                 xScale = d3.scale.linear()
                     .domain([
-                        d3.min(d, function(d) {return d.x;}),
-                        d3.max(d, function(d) {return d.x;})
+                        xMin - paddingX,
+                        xMax + paddingX
                     ])
                     .range([margin.left, (svg_dx-margin.right)]);
                 yScale = d3.scale.linear()
@@ -616,15 +622,28 @@ var MutPatView = (function() {
                     .attr("id", "x_axis")
                     .attr("transform", "translate(0," + (svg_dy - margin.bottom) + ")")
                     // .attr("transform", "translate(75,0)")
-                    .call(xAxis);
-                x_axis.select("path").style("stroke-width", "1px");
+                    .call(xAxis)
+                    .append("text")
+                    .attr("class", "label")
+                    .attr("x", width/2)
+                    .attr("y", 28)
+                    .style("text-anchor", "end")
+                    .text("Expression");
+                x_axis.select("line").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges");
                 y_axis = svg.append("g")
                     .attr("id", "y_axis")
                     .attr("transform", "translate(" + margin.left + ", 0)")
-                    .style("stroke-width", "1px")
                     // .attr("transform", "translate(75,0)")
-                    .call(yAxis);
-                y_axis.select("path").style("stroke-width", "1px");
+                    .call(yAxis)
+                    .append("text")
+                    .attr("class", "label")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", -40)
+                    .attr("x", -(chart_dy / 2))
+                    .attr("dy", ".71em")
+                    .style("text-anchor", "end")
+                    .text("Mutation Count");
+                y_axis.select("line").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges");
 
                 // plot data
                 circles = svg.append("g")
