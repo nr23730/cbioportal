@@ -342,7 +342,7 @@ var MutPatView = (function() {
                     "<input type='hidden' name='is_download' value='true'>" +
                     "<input type='hidden' name='get_patterns' value='false'>" +
                     "<input type='submit' value='Download Full Results'></form>";
-                $("#" + Names.divId).append(downloadFullResultForm);            
+                $("#" + Names.tableDivId).append(downloadFullResultForm);            
             }
 
             function attachMagnitudeFilter() { 
@@ -477,7 +477,7 @@ var MutPatView = (function() {
         var MutPatPlot = function() {
     
             // dimensions
-            var margin = {top: 0, right: 0, bottom: 0, left: 0},
+            var margin = {top: 20, right: 20, bottom: 20, left: 20},
                 style = {size : 2, shape: "circle"},
                 svg_dx = parseInt(dim.mutpat_plots_width),
                 svg_dy = parseInt(dim.mutpat_plots_height),
@@ -541,22 +541,22 @@ var MutPatView = (function() {
                     var dot = d3.select(this);
                     var data = dot.datum();
                     tooltip.style("visibility", "visible")
-                        .style("top", (parseFloat(dot.attr("cy")) - 5) + "px")
-                        .style("left", (parseFloat(dot.attr("cx")) + 5) + "px")
+                        .style("top", dot.attr("cy"))
+                        .style("left", dot.attr("cx"))
                         .html("<b>" + data.qtip + "</b><br>" + data.x + "<br>" + data.y);
                     dot.transition()
                         .ease("linear")
-                        .duration(600)
-                        .delay(100)
-                        .attr("r", (style.size * 10));
+                        .duration(200)
+                        .delay(50)
+                        .attr("r", (style.size * 5));
                 };
                 var mouseOff = function(d) {
                     var dot = d3.select(this);
                     tooltip.style("visibility", "hidden");
                     dot.transition()
                         .ease("linear")
-                        .duration(600)
-                        .delay(100)
+                        .duration(200)
+                        .delay(200)
                         .attr("r", style.size);
                 };
                 d3.select("#" + Names.plotId).selectAll("circle").attr('pointer-events', 'all').on("mouseover", mouseOn);
@@ -587,13 +587,13 @@ var MutPatView = (function() {
                         d3.min(d, function(d) {return d.x;}),
                         d3.max(d, function(d) {return d.x;})
                     ])
-                    .range([0, chart_dx]);
+                    .range([margin.left, (svg_dx-margin.right)]);
                 yScale = d3.scale.linear()
                     .domain([
                         0,
                         d3.max(d, function(d) {return d.y;})
                     ])
-                    .range([chart_dy, 0]);
+                    .range([(svg_dy-margin.top), margin.bottom]);
 
                 // axes
                 // xAxis = d3.svg.axis().scale(xScale).tickFormat(function(d) { return d.x;}); // d3.axis.axisBottom(xScale);
