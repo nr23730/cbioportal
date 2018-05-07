@@ -43,6 +43,7 @@ import org.mskcc.cbio.portal.web_api.GetMutationData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.sql.*;
 import java.util.*;
 
 @Component
@@ -225,10 +226,22 @@ public class MutPatUtil {
     private static Map<String,Set<String>> getMutationMap(int profileId, Set<String> setOfSampleIds, int group) throws DaoException {
         List<String> geneList = Arrays.asList("TTN", "PDE4DIP", "TP53", "CSMD3", "DST", "OBSCN", "DNAH8", "LRP1B");
         Map<String,Set<String>> map = new HashMap<>();
+        Connection con = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
         try {
             GeneticProfile geneticProfile = DaoGeneticProfile.getGeneticProfileById(profileId);
-
-
+            List<GeneticProfile> geneticProfiles = DaoGeneticProfile.getAllGeneticProfiles(geneticProfile.getCancerStudyId());
+            GeneticProfile mutationProfile = null;
+            for(GeneticProfile g : geneticProfiles) {
+                if(g.getGeneticAlterationType() == GeneticAlterationType.MUTATION_EXTENDED) {
+                    mutationProfile = g;
+                }
+            }
+            if (mutationProfile == null) {
+                return map;
+            }
+            
 //            if(mutationModelConverter == null) {
 //                throw new Exception("mutationModelConverter is null");
 //            }
@@ -258,16 +271,36 @@ public class MutPatUtil {
 //                }
 //            }
 
-            JSONArray mutationData = mutationDataUtils.getMutationData(geneticProfile.getStableId(), geneList, new ArrayList<>(setOfSampleIds));
+//            JSONArray mutationData = mutationDataUtils.getMutationData(geneticProfile.getStableId(), geneList, new ArrayList<>(setOfSampleIds));
+//
+//            for (int i = 0; i < mutationData.size(); i++) {
+//                JSONObject jsonobject = (JSONObject) mutationData.get(i);
+//                String caseId = jsonobject.get("CASE_ID").toString();
+//                String gene = jsonobject.get("GENE_SYMBOL").toString();
+//                if (map.get(caseId) == null) {
+//                    map.put(caseId, new HashSet<>());
+//                }
+//                map.get(caseId).add(gene);
+//            }
 
-            for (int i = 0; i < mutationData.size(); i++) {
-                JSONObject jsonobject = (JSONObject) mutationData.get(i);
-                String caseId = jsonobject.get("CASE_ID").toString();
-                String gene = jsonobject.get("GENE_SYMBOL").toString();
-                if (map.get(caseId) == null) {
-                    map.put(caseId, new HashSet<>());
-                }
-                map.get(caseId).add(gene);
+
+            con = JdbcUtil.getDbConnection(MutPatUtil.class);
+            
+            Statement setMaxLen = con.createStatement();
+            setMaxLen.execute("SET group_concat_max_len=1000000");
+            
+            pstmt = con.prepareStatement(
+                "SELECT m.SAMPLE_ID, GROUP_CONCAT(DISTINCT g.HUGO_GENE_SYMBOL SEPARATOR ' ') as MUTATIONS " +
+                    "FROM mutation as m " +
+                    "INNER JOIN gene g ON (g.ENTREZ_GENE_ID = m.ENTREZ_GENE_ID) " +
+                    "WHERE m.GENETIC_PROFILE_ID = ? " +
+                    "GROUP BY m.SAMPLE_ID");
+            pstmt.setInt(1, mutationProfile.getGeneticProfileId());
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                String sampleId = DaoSample.getSampleById(rs.getInt("SAMPLE_ID")).getStableId();
+                Set<String> mutations = new HashSet<String>(Arrays.asList(rs.getString("MUTATIONS").split(" ")));
+                map.put(sampleId, mutations);
             }
             
             return map;
@@ -284,6 +317,9 @@ public class MutPatUtil {
                 counter++;
             }
             return map;
+        } finally {
+            
+            JdbcUtil.closeAll(MutPatUtil.class, con, pstmt, rs);
         }
     }
 
