@@ -500,11 +500,11 @@ var MutPatView = (function() {
                 .append("div")
                 .style("position", "absolute")
                 .style("z-index", "10")
-                // .style("background-color", "lightyellow")
-                // .style("padding", "4px")
-                // .style("border-radius", "4px")
-                // .style("text-align", "center")
-                .attr("classes", "qtip-light qtip-rounded qtip-shadow qtip-lightyellow")
+                .style("background-color", "lightyellow")
+                .style("padding", "4px")
+                .style("border-radius", "4px")
+                .style("text-align", "center")
+                // .attr("classes", "qtip-light qtip-rounded qtip-shadow qtip-lightyellow")
                 .style("visibility", "hidden");
             
 
@@ -540,12 +540,15 @@ var MutPatView = (function() {
                 var mouseOn = function() {
                     var dot = d3.select(this);
                     var data = dot.datum();
-                    tooltip.style("visibility", "visible").text("<b>" + data.qtip + "</b><br>" + data.x + "<br>" + data.y);
+                    tooltip.style("visibility", "visible")
+                        .style("top", (dot.cy - 5) + "px")
+                        .style("left", (dot.cx + 5) + "px")
+                        .html("<b>" + data.qtip + "</b><br>" + data.x + "<br>" + data.y);
                     dot.transition()
                         .ease("elastic")
                         .duration(600)
                         .delay(100)
-                        .attr("d", d3.svg.symbol().size(style.size * 10).type(style.shape));
+                        .attr("r", (style.size * 10));
                 };
                 var mouseOff = function(d) {
                     var dot = d3.select(this);
@@ -554,7 +557,7 @@ var MutPatView = (function() {
                         .ease("elastic")
                         .duration(600)
                         .delay(100)
-                        .attr("d", d3.svg.symbol().size(style.size).type(style.shape));
+                        .attr("r", style.size);
                 };
                 d3.select("#" + Names.plotId).selectAll("circle").attr('pointer-events', 'all').on("mouseover", mouseOn);
                 d3.select("#" + Names.plotId).selectAll("circle").attr('pointer-events', 'all').on("mouseout", mouseOff);
@@ -584,13 +587,13 @@ var MutPatView = (function() {
                         d3.min(d, function(d) {return d.x;}),
                         d3.max(d, function(d) {return d.x;})
                     ])
-                    .range([margin.left, chart_dx]);
+                    .range([0, chart_dx]);
                 yScale = d3.scale.linear()
                     .domain([
                         0,
                         d3.max(d, function(d) {return d.y;})
                     ])
-                    .range([chart_dy, margin.bottom]);
+                    .range([chart_dy, 0]);
 
                 // axes
                 // xAxis = d3.svg.axis().scale(xScale).tickFormat(function(d) { return d.x;}); // d3.axis.axisBottom(xScale);
@@ -609,11 +612,13 @@ var MutPatView = (function() {
                 x_axis = svg.append("g")
                     .attr("id", "x_axis")
                     .attr("transform", "translate(0," + (svg_dy - margin.bottom) + ")")
+                    .style("stroke-width", "1px")
                     // .attr("transform", "translate(75,0)")
                     .call(xAxis);
                 y_axis = svg.append("g")
                     .attr("id", "y_axis")
                     .attr("transform", "translate(" + margin.left + ", 0)")
+                    .style("stroke-width", "1px")
                     // .attr("transform", "translate(75,0)")
                     .call(yAxis);
 
@@ -628,11 +633,7 @@ var MutPatView = (function() {
                     .append("circle")
                     .attr("r", style.size)
                     .attr("cx", function(d) { return xScale(d.x); })
-                    .attr("cy", function(d) { return yScale(d.y); })
-                    .on("mousemove", function() {
-                        return tooltip.style("top", (event.pageY - 30) + "px")
-                            .style("left", event.pageX + "px");
-                    });
+                    .attr("cy", function(d) { return yScale(d.y); });
                     // .attr()
                     // .style("fill", function(d) {
                     //     var norm_color = colorScale(d[1]);
