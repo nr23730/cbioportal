@@ -478,34 +478,37 @@ var MutPatView = (function() {
     
             // dimensions
             var margin = {top: 20, right: 20, bottom: 30, left: 40},
-                svg_dx = dim.mutpat_plots_width,
-                svg_dy = dim.mutpat_plots_height,
-                chart_dx = parseInt(svg_dx) - margin.right - margin.left,
-                chart_dy = parseInt(svg_dy) - margin.top - margin.bottom;
+                svg_dx = parseInt(dim.mutpat_plots_width),
+                svg_dy = parseInt(dim.mutpat_plots_height),
+                chart_dx = svg_dx - margin.right - margin.left,
+                chart_dy = svg_dy - margin.top - margin.bottom;
 
 
             var d = [];
             var circles = {};
             var xAxis = {};
+            var yAxis = {};
             var x_axis = {};
+            var y_axis = {};
             var svg = {};
             var xScale = {};
+            var yScale = {};
 
             
 
             
 
-            function zoom() {
-
-                // re-scale x axis during zoom;
-                x_axis.transition()
-                    .duration(50)
-                    .call(xAxis.scale(d3.event.transform.rescale(xScale)));
-
-                // re-draw circles using new x-axis scale;
-                var new_xScale = d3.event.transform.rescale(xScale);
-                circles.attr("cx", function(d) { return new_xScale(d.x); });
-            }
+            // function zoom() {
+            //
+            //     // re-scale x axis during zoom;
+            //     x_axis.transition()
+            //         .duration(50)
+            //         .call(xAxis.scale(d3.event.transform.rescale(xScale)));
+            //
+            //     // re-draw circles using new x-axis scale;
+            //     var new_xScale = d3.event.transform.rescale(xScale);
+            //     circles.attr("cx", function(d) { return new_xScale(d.x); });
+            // }
 
             function addQtips() {
 
@@ -547,9 +550,11 @@ var MutPatView = (function() {
             function convertData(_result, _groups) {
                 d = [];
                 $.each(_result, function(i, obj) {
+                    var mutationArr = obj.Mutations.split(" ");
                     var datapoint = {
                         x: obj.Expression,
-                        y: 1,
+                        y: mutationArr.length,
+                        mutations: mutationArr,
                         qtip: obj.SampleId
                     };
                     d.push(datapoint);
@@ -560,30 +565,44 @@ var MutPatView = (function() {
                 
                 convertData(result, groups);
 
-                // xScale
+                // Scales
                 xScale = d3.scale.linear()
                     .domain([
                         d3.min(d, function(d) {return d.x;}),
                         d3.max(d, function(d) {return d.x;})
                     ])
                     .range([margin.left, chart_dx]);
+                yScale = d3.scale.linear()
+                    .domain([
+                        d3.min(d, function(d) {return d.y;}),
+                        d3.max(d, function(d) {return d.y;})
+                    ])
+                    .range([chart_dy, margin.bottom]);
 
-                // x-axis
-                xAxis = d3.svg.axis().scale(xScale).tickFormat(function(d) { return d.x;}); // d3.axis.axisBottom(xScale);
-
-                // zoom
+                // axes
+                // xAxis = d3.svg.axis().scale(xScale).tickFormat(function(d) { return d.x;}); // d3.axis.axisBottom(xScale);
+                xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+                yAxis = d3.svg.axis().scale(yScale).orient("left");
+                
+                // init
                 svg = d3.select("#" + Names.plotId)
                     .append("svg")
                     .attr("width", svg_dx)
                     .attr("height", svg_dy)
-                    .call(d3.behavior.zoom().on("zoom", zoom));
+                    // .call(d3.behavior.zoom().on("zoom", zoom));
 
 
-                // add x-axis
+                // add axes
                 x_axis = svg.append("g")
                     .attr("id", "x_axis")
+                    .attr("transform", "translate(0," + svg_dy - margin.bottom + ")")
                     // .attr("transform", "translate(75,0)")
                     .call(xAxis);
+                y_axis = svg.append("g")
+                    .attr("id", "y_axis")
+                    .attr("transform", "translate(" + margin.left + ", 0)")
+                    // .attr("transform", "translate(75,0)")
+                    .call(yAxis);
 
 
                 // plot data
@@ -594,10 +613,10 @@ var MutPatView = (function() {
                     .data(d)
                     .enter()
                     .append("circle")
-                    .attr("r", 4)
+                    .attr("r", 1)
                     .attr("cx", function(d) { return xScale(d.x); })
-                    .attr("cy", function(d) { return d.y; })
-                    .attr()
+                    .attr("cy", function(d) { return yScale(d.y); });
+                    // .attr()
                     // .style("fill", function(d) {
                     //     var norm_color = colorScale(d[1]);
                     //     return d3.interpolateInferno(norm_color)
