@@ -55,7 +55,7 @@ var MutPatView = (function() {
             mutpat_table_width: "500px",
             mutpat_tables_width: "1120px",
             mutpat_plots_width: "1120px",
-            mutpat_plots_height: "100px"
+            mutpat_plots_height: "400px"
         },
         has_mutation_data = false;
     //Containers    
@@ -512,7 +512,7 @@ var MutPatView = (function() {
 
             function addQtips() {
 
-                d3.select("#" + Names.plotId).selectAll('circles').each(
+                d3.select("#" + Names.plotId).selectAll('circle').each(
                     function(d) {
                         $(this).qtip(
                             {
@@ -543,8 +543,8 @@ var MutPatView = (function() {
                         .delay(100)
                         .attr("d", d3.svg.symbol().size(style.size).type(style.shape));
                 };
-                d3.select("#" + Names.plotId).selectAll("circles").attr('pointer-events', 'all').on("mouseover", mouseOn);
-                d3.select("#" + Names.plotId).selectAll("circles").attr('pointer-events', 'all').on("mouseout", mouseOff);
+                d3.select("#" + Names.plotId).selectAll("circle").attr('pointer-events', 'all').on("mouseover", mouseOn);
+                d3.select("#" + Names.plotId).selectAll("circle").attr('pointer-events', 'all').on("mouseout", mouseOff);
             }
             
             function convertData(_result, _groups) {
@@ -595,7 +595,7 @@ var MutPatView = (function() {
                 // add axes
                 x_axis = svg.append("g")
                     .attr("id", "x_axis")
-                    .attr("transform", "translate(0," + svg_dy - margin.bottom + ")")
+                    .attr("transform", "translate(0," + margin.bottom + ")")
                     // .attr("transform", "translate(75,0)")
                     .call(xAxis);
                 y_axis = svg.append("g")
