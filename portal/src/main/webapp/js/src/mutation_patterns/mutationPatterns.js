@@ -477,7 +477,7 @@ var MutPatView = (function() {
         var MutPatPlot = function() {
     
             // dimensions
-            var margin = {top: 20, right: 20, bottom: 20, left: 20},
+            var margin = {top: 20, right: 20, bottom: 20, left: 40},
                 style = {size : 2, shape: "circle"},
                 svg_dx = parseInt(dim.mutpat_plots_width),
                 svg_dy = parseInt(dim.mutpat_plots_height),
@@ -568,7 +568,7 @@ var MutPatView = (function() {
                 $.each(_result, function(i, obj) {
                     var mutationArr = obj.Mutations.split(" ");
                     var datapoint = {
-                        x: obj.Expression,
+                        x: parseFloat(obj.Expression),
                         y: mutationArr.length,
                         mutations: mutationArr,
                         qtip: obj.SampleId
@@ -612,16 +612,16 @@ var MutPatView = (function() {
                 x_axis = svg.append("g")
                     .attr("id", "x_axis")
                     .attr("transform", "translate(0," + (svg_dy - margin.bottom) + ")")
-                    .style("stroke-width", "1px")
                     // .attr("transform", "translate(75,0)")
                     .call(xAxis);
+                x_axis.select("path").style("stroke-width", "1px");
                 y_axis = svg.append("g")
                     .attr("id", "y_axis")
                     .attr("transform", "translate(" + margin.left + ", 0)")
                     .style("stroke-width", "1px")
                     // .attr("transform", "translate(75,0)")
                     .call(yAxis);
-
+                y_axis.select("path").style("stroke-width", "1px");
 
                 // plot data
                 circles = svg.append("g")
