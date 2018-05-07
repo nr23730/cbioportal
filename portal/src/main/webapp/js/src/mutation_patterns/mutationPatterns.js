@@ -490,9 +490,15 @@ var MutPatView = (function() {
             var svg = {};
 
             // x position
+            // var xScale = d3.scale.linear()
+            //     .domain(d3.extent(d, function(d) { return d.x; }))
+            //     .range([chart_dx, margin.right]);
             var xScale = d3.scale.linear()
-                .domain(d3.extent(d, function(d) { return d.x; }))
-                .range([chart_dx, margin.right]);
+                .domain([
+                    d3.min(d, function(d) {return d.x;}),
+                    d3.max(d, function(d) {return d.x;})
+                ])
+                .range([margin.left, chart_dx]);
 
             // x-axis
             var xAxis = d3.svg.axis().scale(xScale).tickFormat(function(d) { return d.x;}); // d3.axis.axisBottom(xScale);
@@ -512,7 +518,7 @@ var MutPatView = (function() {
 
             function addQtips() {
 
-                elem.dotsGroup.selectAll('circles').each(
+                d3.select("#" + Names.plotId).dotsGroup.selectAll('circles').each(
                     function(d) {
                         $(this).qtip(
                             {
@@ -543,8 +549,8 @@ var MutPatView = (function() {
                         .delay(100)
                         .attr("d", d3.svg.symbol().size(style.size).type(style.shape));
                 };
-                elem.dotsGroup.selectAll("circles").attr('pointer-events', 'all').on("mouseover", mouseOn);
-                elem.dotsGroup.selectAll("circles").attr('pointer-events', 'all').on("mouseout", mouseOff);
+                d3.select("#" + Names.plotId).dotsGroup.selectAll("circles").attr('pointer-events', 'all').on("mouseover", mouseOn);
+                d3.select("#" + Names.plotId).dotsGroup.selectAll("circles").attr('pointer-events', 'all').on("mouseout", mouseOff);
             }
             
             function convertData(_result, _groups) {
