@@ -626,9 +626,10 @@ var MutPatView = (function() {
                         xMax + paddingX
                     ])
                     .range([margin.left, (svg_dx-margin.right)]);
-                yScale = d3.scale.linear()
+                yScale = d3.scale.log()
+                    .base(10)
                     .domain([
-                        0,
+                        1,
                         d3.max(d, function(d) {return d.y;})
                     ])
                     .range([(svg_dy-margin.top), margin.bottom]);
