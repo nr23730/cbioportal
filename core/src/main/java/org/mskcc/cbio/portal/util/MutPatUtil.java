@@ -299,8 +299,10 @@ public class MutPatUtil {
             rs = pstmt.executeQuery();
             while (rs.next()) {
                 String sampleId = DaoSample.getSampleById(rs.getInt("SAMPLE_ID")).getStableId();
-                Set<String> mutations = new HashSet<String>(Arrays.asList(rs.getString("MUTATIONS").split(" ")));
-                map.put(sampleId, mutations);
+                if(setOfSampleIds.contains(sampleId)) {
+                    Set<String> mutations = new HashSet<String>(Arrays.asList(rs.getString("MUTATIONS").split(" ")));
+                    map.put(sampleId, mutations);
+                }
             }
             
             return map;
