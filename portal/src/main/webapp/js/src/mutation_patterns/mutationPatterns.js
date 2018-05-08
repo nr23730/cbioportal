@@ -380,7 +380,7 @@ var MutPatView = (function() {
                                 var hasPattern = true;
                                 var dot = d3.select(this);
                                 $.each(pattern, function(i, obj) {
-                                    if(d.mutations.indexOf(obj.toString() < 0))  {
+                                    if(d.mutations.indexOf(obj.toString()) < 0)  {
                                         hasPattern = false;
                                     }
                                 });
