@@ -485,18 +485,20 @@ var MutPatView = (function() {
                 chart_dy = svg_dy - margin.top - margin.bottom;
 
 
-            var d = [];
-            var circles = {};
-            var xAxis = {};
-            var yAxis = {};
-            var x_axis = {};
-            var y_axis = {};
-            var svg = {};
-            var xScale = {};
-            var yScale = {};
+            var d = [],
+                circles = {},
+                xAxis = {},
+                yAxis = {},
+                x_axis = {},
+                y_axis = {},
+                svg = {},
+                xScale = {},
+                yScale = {},
+                maxXLow = Number.NEGATIVE_INFINITY,
+                minXHigh = Number.POSITIVE_INFINITY;
+            
 
-
-            var tooltip = d3.select("#" + Names.plotId)
+            var tooltip = d3.select("body")//("#" + Names.plotId)
                 .append("div")
                 .style("position", "absolute")
                 .style("z-index", "10")
@@ -520,6 +522,7 @@ var MutPatView = (function() {
             //     circles.attr("cx", function(d) { return new_xScale(d.x); });
             // }
 
+            
             function addQtips() {
 
                 // d3.select("#" + Names.plotId).selectAll('circle').each(
@@ -565,10 +568,19 @@ var MutPatView = (function() {
             
             function convertData(_result, _groups) {
                 d = [];
+                var groups = parseInt(_groups);
+                if (groups == 0) groups = 3;
                 $.each(_result, function(i, obj) {
                     var mutationArr = obj.Mutations.split(" ");
                     var expression = parseFloat(obj.Expression);
                     if(!isNaN(expression)) {
+                        if(groups != 1) {
+                            if((obj.Group == 0) && expression > maxXLow) {
+                                maxXLow = expression;
+                            } else if ((obj.Group == (groups-1)) && expression < minXHigh) {
+                                minXHigh = expression;
+                            } 
+                        }
                         var datapoint = {
                             x: expression,
                             y: mutationArr.length,
@@ -629,7 +641,7 @@ var MutPatView = (function() {
                     .attr("y", 28)
                     .style("text-anchor", "end")
                     .text("Expression");
-                x_axis.select("line").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges");
+                x_axis.select("path").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges");
                 y_axis = svg.append("g")
                     .attr("id", "y_axis")
                     .attr("transform", "translate(" + margin.left + ", 0)")
@@ -643,7 +655,7 @@ var MutPatView = (function() {
                     .attr("dy", ".71em")
                     .style("text-anchor", "end")
                     .text("Mutation Count");
-                y_axis.select("line").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges");
+                y_axis.select("path").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges");
 
                 // plot data
                 circles = svg.append("g")
@@ -663,6 +675,29 @@ var MutPatView = (function() {
                     // });
                 
                 addQtips();
+                
+                // Draw Group lines
+                groups = parseInt(groups);
+                if(groups != 1) {
+                    svg.append("line")
+                        .attr("x1", xScale(maxXLow))
+                        .attr("y1", margin.bottom)
+                        .attr("x2", xScale(maxXLow))
+                        .attr("y2", svg_dy - margin.top)
+                        .style("stroke-width", 1)
+                        .style("stroke", "red")
+                        .style("fill", "none");
+                    if(groups > 2) {
+                        svg.append("line")
+                            .attr("x1", xScale(minXHigh))
+                            .attr("y1", margin.bottom)
+                            .attr("x2", xScale(minXHigh))
+                            .attr("y2", svg_dy - margin.top)
+                            .style("stroke-width", 1)
+                            .style("stroke", "red")
+                            .style("fill", "none");
+                    }
+                }
                 
             }
 
