@@ -252,7 +252,7 @@ var MutPatView = (function() {
 
         var MutPatTable = function(position) {
 
-            function configTable() {
+            function configTable(position) {
                 //Draw out the markdown of the datatable
                 $("#" + Names.tableId + position).append(
                     "<thead style='font-size:70%;' >" +
@@ -345,7 +345,7 @@ var MutPatView = (function() {
                 $("#" + Names.tableDivId).append(downloadFullResultForm);            
             }
 
-            function attachMagnitudeFilter() { 
+            function attachMagnitudeFilter(position) { 
                 //Add drop down filter for single/all pattern display
                 $("#" + Names.tableDivId + position).find('.mutpat-table-filter-magnitude').append(
                     "<select id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "' style='width: 230px; margin-left: 5px;'>" +
@@ -364,7 +364,7 @@ var MutPatView = (function() {
                 });
             }
 
-            function attachRowListener() {
+            function attachRowListener(position) {
                 $("#" + Names.tableId + position + " tbody tr").live('click', function (event) {
                     //Highlight selected row
                     $(mutPatTableInstance.fnSettings().aoData).each(function (){
@@ -453,12 +453,12 @@ var MutPatView = (function() {
                     //Render datatable
                     convertData(result, groups);
                     overWriteFilters(); 
-                    configTable();
+                    configTable(position);
                     if ( position === "L" ) {
                         attachDownloadFullResultButton();
                     }
-                    attachMagnitudeFilter();
-                    attachRowListener();
+                    attachMagnitudeFilter(position);
+                    attachRowListener(position);
                     initTable();                    
                 }
             }
@@ -696,15 +696,17 @@ var MutPatView = (function() {
                 // Draw Group lines
                 groups = parseInt(groups);
                 if(groups != 1) {
-                    svg.append("line")
-                        .attr("x1", xScale(maxXLow))
-                        .attr("y1", margin.bottom)
-                        .attr("x2", xScale(maxXLow))
-                        .attr("y2", svg_dy - margin.top)
-                        .style("stroke-width", 1)
-                        .style("stroke", "#F00")
-                        .style("fill", "none");
-                    if(groups > 2) {
+                    if (isFinite(maxXLow)) {
+                        svg.append("line")
+                            .attr("x1", xScale(maxXLow))
+                            .attr("y1", margin.bottom)
+                            .attr("x2", xScale(maxXLow))
+                            .attr("y2", svg_dy - margin.top)
+                            .style("stroke-width", 1)
+                            .style("stroke", "#F00")
+                            .style("fill", "none");
+                    }
+                    if(groups > 2 && isFinite(minXHigh)) {
                         svg.append("line")
                             .attr("x1", xScale(minXHigh))
                             .attr("y1", margin.bottom)
