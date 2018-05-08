@@ -695,6 +695,7 @@ var MutPatView = (function() {
                 
                 // Draw Group lines
                 groups = parseInt(groups);
+                if(groups === 0) groups = 3; // z-scores
                 if(groups != 1) {
                     if (isFinite(maxXLow)) {
                         svg.append("line")
