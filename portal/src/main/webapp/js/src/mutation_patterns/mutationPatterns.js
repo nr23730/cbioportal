@@ -157,7 +157,7 @@ var MutPatView = (function() {
                     // }   
                     //Empty all the sub divs
                     $("#" + Prefix.tableDivPrefix + cbio.util.safeProperty(value)).empty();
-                    // $("#" + Prefix.plotsPreFix + cbio.util.safeProperty(value)).empty();
+                    $("#" + Prefix.plotPrefix + cbio.util.safeProperty(value)).empty();
                     $("#" + Prefix.loadingImgPrefix + cbio.util.safeProperty(value)).empty();
                     //Add back loading imgs
                     $("#" + Prefix.loadingImgPrefix + cbio.util.safeProperty(value)).append(
@@ -212,7 +212,7 @@ var MutPatView = (function() {
                     // }   
                     //Empty all the sub divs
                     $("#" + Prefix.tableDivPrefix + cbio.util.safeProperty(value)).empty();
-                    // $("#" + Prefix.plotsPreFix + cbio.util.safeProperty(value)).empty();
+                    $("#" + Prefix.plotPrefix + cbio.util.safeProperty(value)).empty();
                     $("#" + Prefix.loadingImgPrefix + cbio.util.safeProperty(value)).empty();
                     //Add back loading imgs
                     $("#" + Prefix.loadingImgPrefix + cbio.util.safeProperty(value)).append(
@@ -373,12 +373,29 @@ var MutPatView = (function() {
                     $(event.target.parentNode).addClass('row_selected');
                     //Get the gene name of the selected row
                     var aData = mutPatTableInstance.fnGetData(this);
-                    // if (null !== aData) {
+                    if (null !== aData) {
+                        var pattern = aData[0].split(" ");
+                        d3.select("#" + Names.plotId).selectAll('circle').each(
+                            function(d) {
+                                var hasPattern = true;
+                                var dot = d3.select(this);
+                                $.each(pattern, function(i, obj) {
+                                    if(d.mutations.indexOf(obj.toString() < 0))  {
+                                        hasPattern = false;
+                                    }
+                                });
+                                if(hasPattern) {
+                                    dot.style("fill", "#F00");
+                                } else {
+                                    dot.style("fill", "#000");
+                                }
+                            }
+                        );
                     //     $("#" + Names.plotId).empty();
                     //     $("#" + Names.plotId).append("<img style='padding:220px;' src='images/ajax-loader.gif' alt='loading' />");
                     //     var mutpatPlots = new MutpatPlots();
                     //     mutpatPlots.init(Names.plotId, geneId, aData[0], aData[2], aData[3], $("#mutpat-profile-selector :selected").val());
-                    // }
+                    }
                 });
             }
 
@@ -569,15 +586,15 @@ var MutPatView = (function() {
             function convertData(_result, _groups) {
                 d = [];
                 var groups = parseInt(_groups);
-                if (groups == 0) groups = 3;
+                if (groups === 0) groups = 3;
                 $.each(_result, function(i, obj) {
                     var mutationArr = obj.Mutations.split(" ");
                     var expression = parseFloat(obj.Expression);
                     if(!isNaN(expression)) {
                         if(groups != 1) {
-                            if((obj.Group == 0) && expression > maxXLow) {
+                            if((parseInt(obj.Group) === 0) && expression > maxXLow) {
                                 maxXLow = expression;
-                            } else if ((obj.Group == (groups-1)) && expression < minXHigh) {
+                            } else if ((parseInt(obj.Group) === (groups-1)) && expression < minXHigh) {
                                 minXHigh = expression;
                             } 
                         }
@@ -685,7 +702,7 @@ var MutPatView = (function() {
                         .attr("x2", xScale(maxXLow))
                         .attr("y2", svg_dy - margin.top)
                         .style("stroke-width", 1)
-                        .style("stroke", "red")
+                        .style("stroke", "#F00")
                         .style("fill", "none");
                     if(groups > 2) {
                         svg.append("line")
@@ -694,7 +711,7 @@ var MutPatView = (function() {
                             .attr("x2", xScale(minXHigh))
                             .attr("y2", svg_dy - margin.top)
                             .style("stroke-width", 1)
-                            .style("stroke", "red")
+                            .style("stroke", "#F00")
                             .style("fill", "none");
                     }
                 }
