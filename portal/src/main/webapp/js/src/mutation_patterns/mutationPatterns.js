@@ -60,6 +60,7 @@ var MutPatView = (function() {
         has_mutation_data = false;
     //Containers    
     var profileList = []; //Profile Lists for all queried genes
+    var alterationProfileList = []; //Profile Lists for all queried genes
     var groupsList = [{"ID":1, "NAME":"1"}, {"ID":2, "NAME":"2"}, {"ID":5, "NAME":"5"}, {"ID":10, "NAME":"10"}, {"ID":0, "NAME":"Use Z-Scores"}]; //Groups Lists for all queried genes
 
     //Sub tabs
@@ -184,19 +185,19 @@ var MutPatView = (function() {
     
     var AlterationProfileSelector = (function() {
 
-        function filterProfiles(_profileList) {
-            $.each(_profileList, function(i, obj) {
+        function filterProfiles(_alterationProfileList) {
+            $.each(_alterationProfileList, function(i, obj) {
                 if (obj["GENETIC_ALTERATION_TYPE"] === "COPY_NUMBER_ALTERATION" && obj["DATATYPE"] === "DISCRETE") {
-                    profileList.push(obj);
+                    alterationProfileList.push(obj);
                 } else if (obj["GENETIC_ALTERATION_TYPE"] === "MUTATION_EXTENDED") {
-                    profileList.push(obj);
+                    alterationProfileList.push(obj);
                     has_mutation_data = true;
                 }
             });
             //swap the mutation seq profile to the top
-            $.each(profileList, function(i, obj) {
+            $.each(alterationProfileList, function(i, obj) {
                 if (obj["STABLE_ID"].toLowerCase().indexOf("mutation") !== -1) {
-                    cbio.util.swapElement(profileList, i, 0);
+                    cbio.util.swapElement(alterationProfileList, i, 0);
                 }
             });
         }
@@ -205,7 +206,7 @@ var MutPatView = (function() {
             $("#mutpat-alteration-profile-selector-dropdown").append(
                 "Data Set " + 
                 "<select id='mutpat-alteration-profile-selector'></select>");
-            $.each(profileList, function(index, value) {
+            $.each(alterationProfileList, function(index, value) {
                 $("#mutpat-alteration-profile-selector").append(
                     "<option value='" + value["STABLE_ID"] + "'>" +
                     value["NAME"] + "</option>"
@@ -244,8 +245,8 @@ var MutPatView = (function() {
         }
 
         return {
-            init: function(_profileList) {
-                filterProfiles(_profileList);
+            init: function(_alterationProfileList) {
+                filterProfiles(_alterationProfileList);
                 drawProfileSelector();
                 bindListener();
             }
