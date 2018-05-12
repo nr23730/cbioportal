@@ -682,24 +682,43 @@ var MutPatView = (function() {
                     }
                 });
             }
+            
+            function easeInterpolate(ease) {
+                return function(a, b) {
+                    var i = d3.interpolate(a, b);
+                    return function(t) {
+                        return i(ease(t));
+                    };
+                };
+            }
 
             function getDataCallBack(result, groups) {
                 
                 convertData(result, groups);
 
                 // Scales
-                var xMin = d3.min(d, function(d) {return d.x;}),
-                    xMax = d3.max(d, function(d) {return d.x;}),
-                    xRange = xMax-xMin,
+                var xMin = Math.abs(d3.min(d, function(d) {return d.x;})),
+                    xMax = Math.abs(d3.max(d, function(d) {return d.x;}));
+
+                if(xMin < xMax) {
+                    xMin = -xMax;
+                } else {
+                    xMax = xMin;
+                    xMin = -xMin;
+                }
+                
+                var xRange = xMax-xMin,
                     paddingRange = 0.05,
                     paddingX = xRange*paddingRange;
+                                
                 
                 xScale = d3.scale.linear()
                     .domain([
                         xMin - paddingX,
                         xMax + paddingX
                     ])
-                    .range([margin.left, (svg_dx-margin.right)]);
+                    .range([margin.left, (svg_dx-margin.right)])
+                    .interpolate(easeInterpolate(d3.easeInOutQuad));
                 yScale = d3.scale.linear()
                     .domain([
                         0,
