@@ -718,7 +718,7 @@ var MutPatView = (function() {
                         xMax + paddingX
                     ])
                     .range([margin.left, (svg_dx-margin.right)])
-                    .interpolate(easeInterpolate(d3.easeInOutQuad));
+                    .interpolate(easeInterpolate(d3.easeInOutQuad()));
                 yScale = d3.scale.linear()
                     .domain([
                         0,
