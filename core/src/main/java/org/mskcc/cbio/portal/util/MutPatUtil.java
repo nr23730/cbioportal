@@ -172,7 +172,7 @@ public class MutPatUtil {
         return map;
     }
 
-    public static Map<Integer, Map<String,Set<String>>> getMutationMaps(int profileId, String sampleSetId, String sampleIdsKeys, long entrezGeneId, int groups, double zScoreThreshold) throws DaoException {
+    public static Map<Integer, Map<String,Set<String>>> getAlterationMaps(int profileId, String sampleSetId, String sampleIdsKeys, long entrezGeneId, int groups, double zScoreThreshold, boolean mutation) throws DaoException {
         
         TreeMap<Double, String> expressionMap = getExpression(profileId, sampleSetId, sampleIdsKeys, entrezGeneId);
         Map<Integer, Set<String>> groupsMap = new HashMap<>();
@@ -192,12 +192,9 @@ public class MutPatUtil {
                     normal.add(entry.getValue());
                 }
             }
-//            groupsMap.put(0, low);
-//            groupsMap.put(1, normal);
-//            groupsMap.put(2, high);
-            resultMap.put(0, getMutationMap(profileId, low, 0));
-            resultMap.put(1, getMutationMap(profileId, normal, 1));
-            resultMap.put(2, getMutationMap(profileId, high, 2));
+            resultMap.put(0, getAlterationMap(profileId, low, 0, mutation));
+            resultMap.put(1, getAlterationMap(profileId, normal, 1, mutation));
+            resultMap.put(2, getAlterationMap(profileId, high, 2, mutation));
         } else {
             List<String> orderedSampleIds = new ArrayList<>(expressionMap.values());
             int itemsPerGroup = expressionMap.size();
@@ -217,14 +214,13 @@ public class MutPatUtil {
                 groupsMap.put(i, sampleIdsInGroup);
             }
             for (int i = 0; i < groups; i++) {
-                resultMap.put(i, getMutationMap(profileId, groupsMap.get(i), i));
+                resultMap.put(i, getAlterationMap(profileId, groupsMap.get(i), i, mutation));
             }
         }
         return resultMap;
     }
 
-    private static Map<String,Set<String>> getMutationMap(int profileId, Set<String> setOfSampleIds, int group) throws DaoException {
-        List<String> geneList = Arrays.asList("TTN", "PDE4DIP", "TP53", "CSMD3", "DST", "OBSCN", "DNAH8", "LRP1B");
+    private static Map<String,Set<String>> getAlterationMap(int profileId, Set<String> setOfSampleIds, int group, boolean mutation) throws DaoException {
         Map<String,Set<String>> map = new HashMap<>();
         Connection con = null;
         PreparedStatement pstmt = null;
@@ -232,76 +228,51 @@ public class MutPatUtil {
         try {
             GeneticProfile geneticProfile = DaoGeneticProfile.getGeneticProfileById(profileId);
             List<GeneticProfile> geneticProfiles = DaoGeneticProfile.getAllGeneticProfiles(geneticProfile.getCancerStudyId());
-            GeneticProfile mutationProfile = null;
+            GeneticProfile alterationProfile = null;
             for(GeneticProfile g : geneticProfiles) {
-                if(g.getGeneticAlterationType() == GeneticAlterationType.MUTATION_EXTENDED) {
-                    mutationProfile = g;
+                if(mutation) {
+                    if(g.getGeneticAlterationType() == GeneticAlterationType.MUTATION_EXTENDED) {
+                        alterationProfile = g;
+                    }
+                } else {
+                    if(g.getGeneticAlterationType() == GeneticAlterationType.COPY_NUMBER_ALTERATION && g.getDatatype() == "DISCRETE") {
+                        alterationProfile = g;
+                    }
                 }
             }
-            if (mutationProfile == null) {
+            if (alterationProfile == null) {
                 return map;
             }
-            
-//            if(mutationModelConverter == null) {
-//                throw new Exception("mutationModelConverter is null");
-//            }
-//            if(mutationRepositoryLegacy == null) {
-//                throw new Exception("mutationRepositoryLegacy is null");
-//            }
-//            GetMutationData remoteCallMutation = new GetMutationData(mutationRepositoryLegacy, mutationModelConverter);
-//            List<ExtendedMutation> mutationList = remoteCallMutation.getMutationData(geneticProfile,
-//                geneList,
-//                setOfSampleIds,
-//                null);
-//            
-//            for (ExtendedMutation mutation : mutationList)
-//            {
-//                Integer internalSampleId = mutation.getSampleId();
-//                Sample sample = DaoSample.getSampleById(internalSampleId);
-//                String sampleId = sample.getStableId();
-//
-//
-//                if (setOfSampleIds != null &&
-//                    setOfSampleIds.contains(sampleId))
-//                {
-//                    if (!map.containsKey(sampleId)) {
-//                        map.put(sampleId, new HashSet<String>());
-//                    }
-//                    map.get(sampleId).add(mutation.getGeneSymbol());
-//                }
-//            }
-
-//            JSONArray mutationData = mutationDataUtils.getMutationData(geneticProfile.getStableId(), geneList, new ArrayList<>(setOfSampleIds));
-//
-//            for (int i = 0; i < mutationData.size(); i++) {
-//                JSONObject jsonobject = (JSONObject) mutationData.get(i);
-//                String caseId = jsonobject.get("CASE_ID").toString();
-//                String gene = jsonobject.get("GENE_SYMBOL").toString();
-//                if (map.get(caseId) == null) {
-//                    map.put(caseId, new HashSet<>());
-//                }
-//                map.get(caseId).add(gene);
-//            }
-
 
             con = JdbcUtil.getDbConnection(MutPatUtil.class);
             
             Statement setMaxLen = con.createStatement();
             setMaxLen.execute("SET group_concat_max_len=1000000");
             
-            pstmt = con.prepareStatement(
-                "SELECT m.SAMPLE_ID, GROUP_CONCAT(DISTINCT g.HUGO_GENE_SYMBOL SEPARATOR ' ') as MUTATIONS " +
-                    "FROM mutation as m " +
-                    "INNER JOIN gene g ON (g.ENTREZ_GENE_ID = m.ENTREZ_GENE_ID) " +
-                    "WHERE m.GENETIC_PROFILE_ID = ? " +
-                    "GROUP BY m.SAMPLE_ID");
-            pstmt.setInt(1, mutationProfile.getGeneticProfileId());
+            if(mutation) {
+                pstmt = con.prepareStatement(
+                    "SELECT m.SAMPLE_ID, GROUP_CONCAT(DISTINCT g.HUGO_GENE_SYMBOL SEPARATOR ',') as ALTERATIONS " +
+                        "FROM mutation as m " +
+                        "INNER JOIN gene g ON (g.ENTREZ_GENE_ID = m.ENTREZ_GENE_ID) " +
+                        "WHERE m.GENETIC_PROFILE_ID = ? " +
+                        "GROUP BY m.SAMPLE_ID");
+            } else {
+                pstmt = con.prepareStatement(
+                    "SELECT SAMPLE_ID, REPLACE(REPLACE(GROUP_CONCAT(CONCAT(g.HUGO_GENE_SYMBOL, ' ', ALTERATION) SEPARATOR ','), ' -2', ' DEL'), ' 2', ' AMP') as ALTERATIONS " +
+                        "FROM sample_cna_event, cna_event " +
+                        "INNER JOIN gene g ON (g.ENTREZ_GENE_ID = cna_event.ENTREZ_GENE_ID) " +
+                        "WHERE GENETIC_PROFILE_ID=  ? " +
+                        "AND sample_cna_event.CNA_EVENT_ID=cna_event.CNA_EVENT_ID " +
+                        "GROUP BY SAMPLE_ID");
+            }
+            pstmt.setInt(1, alterationProfile.getGeneticProfileId());
             rs = pstmt.executeQuery();
+            logger.trace(rs.getWarnings().getMessage());
             while (rs.next()) {
                 String sampleId = DaoSample.getSampleById(rs.getInt("SAMPLE_ID")).getStableId();
                 if(setOfSampleIds.contains(sampleId)) {
-                    Set<String> mutations = new HashSet<String>(Arrays.asList(rs.getString("MUTATIONS").split(" ")));
-                    map.put(sampleId, mutations);
+                    Set<String> alterations = new HashSet<String>(Arrays.asList(rs.getString("ALTERATIONS").split(",")));
+                    map.put(sampleId, alterations);
                 }
             }
             
@@ -325,9 +296,9 @@ public class MutPatUtil {
         }
     }
 
-    public static Map<String,Set<String>> getMutationMap(int profileId, String sampleSetId, String sampleIdsKeys) throws DaoException {
+    public static Map<String,Set<String>> getMutationMap(int profileId, String sampleSetId, String sampleIdsKeys, boolean mutation) throws DaoException {
         Set<String> setOfSampleIds = new HashSet<String>(getSampleIds(sampleSetId,sampleIdsKeys));
-        return getMutationMap(profileId, setOfSampleIds, 0);
+        return getAlterationMap(profileId, setOfSampleIds, 0, mutation);
     }
 
 

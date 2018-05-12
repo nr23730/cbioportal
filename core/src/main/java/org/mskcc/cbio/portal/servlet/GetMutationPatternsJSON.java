@@ -147,6 +147,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
         String caseIdsKey = httpServletRequest.getParameter("case_ids_key");
         boolean isDownload = Boolean.parseBoolean(httpServletRequest.getParameter("is_download"));
         boolean getPatterns = Boolean.parseBoolean(httpServletRequest.getParameter("get_patterns"));
+        boolean mutation = getBoolFromAlterationProfile(httpServletRequest.getParameter("alteration_profile_id"));
         
         int groups = NumberUtils.toInt(httpServletRequest.getParameter("groups"), 1);
         double zScoreThreshold = NumberUtils.toDouble(httpServletRequest.getParameter("zscore_threshold"), 2.0);
@@ -158,12 +159,12 @@ public class GetMutationPatternsJSON extends HttpServlet {
 
         if (isDownload) {
             StringBuilder fullResutlStr = new StringBuilder();
-            fullResutlStr.append("Group\tSampleID\tExpression\tMutations\n");
+            fullResutlStr.append("Group\tSampleID\tExpression\tAlterations\n");
             GeneticProfile final_gp = DaoGeneticProfile.getGeneticProfileByStableId(profileId);
             if (final_gp != null) {
                 try {
                     Map<String, Double> expressionMap = MutPatUtil.getExpressionMap(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId);
-                    Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getMutationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold);
+                    Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getAlterationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold, mutation);
                     for (int i = 0; i < map.size(); i++ ) {
                         TreeMap<String, Set<String>> treeMap = new TreeMap<>(map.get(i));
                         for (Map.Entry<String, Set<String>> entry: treeMap.entrySet()) {
@@ -171,7 +172,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
                                 i + "\t" +
                                     entry.getKey() + "\t" +
                                     expressionMap.get(entry.getKey()) + "\t" +
-                                    String.join(" ", entry.getValue()) + "\n"
+                                    String.join(",", entry.getValue()) + "\n"
                             );
                         }
                     }
@@ -198,7 +199,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
             if (final_gp != null) {
                 try {
                     if (getPatterns) {
-                        Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getMutationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold);
+                        Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getAlterationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold, mutation);
                         for (Map.Entry<Integer, Map<String,Set<String>>> mutationMap: map.entrySet()) {
                             ArrayNode arrayNode = mapper.createArrayNode();
                             List<List<String>> transactions = new ArrayList<>();
@@ -212,7 +213,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
 
                             for (FPGrowth.FreqItemset<String> itemset: fpgModel.freqItemsets().toJavaRDD().collect()) {
                                 ObjectNode _scores = mapper.createObjectNode();
-                                _scores.put("pattern", String.join(" ", itemset.javaItems()));
+                                _scores.put("pattern", String.join(",", itemset.javaItems()));
                                 _scores.put("magnitude", itemset.javaItems().size());
                                 _scores.put("support", (double)itemset.freq()/(double)transactions.size());
                                 arrayNode.add(_scores);
@@ -222,7 +223,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
                         mapper.writeValue(out, fullResultJson);
                     } else {
                         Map<String, Double> expressionMap = MutPatUtil.getExpressionMap(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId);
-                        Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getMutationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold);
+                        Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getAlterationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold, mutation);
                         for (int i = 0; i < map.size(); i++ ) {
                             TreeMap<String, Set<String>> treeMap = new TreeMap<>(map.get(i));
                             for (Map.Entry<String, Set<String>> entry: treeMap.entrySet()) {
@@ -230,7 +231,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
                                 _scores.put("Group", i);
                                 _scores.put("SampleId", entry.getKey());
                                 _scores.put("Expression", expressionMap.get(entry.getKey()));
-                                _scores.put("Mutations", String.join(" ", entry.getValue()));
+                                _scores.put("Alterations", String.join(",", entry.getValue()));
                                 if(_scores.get("Expression") != null) fullResultJson.add(_scores);
                             }
                         }
@@ -245,6 +246,11 @@ public class GetMutationPatternsJSON extends HttpServlet {
             }
         }
 
+    }
+    
+    private boolean getBoolFromAlterationProfile(String alterationProfile) {
+        if(alterationProfile.toLowerCase().contains("mutation")) return true;
+        else return false;
     }
 }
 

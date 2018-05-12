@@ -181,6 +181,77 @@ var MutPatView = (function() {
         };
 
     }()); //Closing Profile Selector
+    
+    var AlterationProfileSelector = (function() {
+
+        function filterProfiles(_profileList) {
+            $.each(_profileList, function(i, obj) {
+                if (obj["GENETIC_ALTERATION_TYPE"] === "COPY_NUMBER_ALTERATION" && obj["DATATYPE"] === "DISCRETE") {
+                    profileList.push(obj);
+                } else if (obj["GENETIC_ALTERATION_TYPE"] === "MUTATION_EXTENDED") {
+                    profileList.push(obj);
+                    has_mutation_data = true;
+                }
+            });
+            //swap the mutation seq profile to the top
+            $.each(profileList, function(i, obj) {
+                if (obj["STABLE_ID"].toLowerCase().indexOf("mutation") !== -1) {
+                    cbio.util.swapElement(profileList, i, 0);
+                }
+            });
+        }
+
+        function drawProfileSelector() {
+            $("#mutpat-alteration-profile-selector-dropdown").append(
+                "Data Set " + 
+                "<select id='mutpat-alteration-profile-selector'></select>");
+            $.each(profileList, function(index, value) {
+                $("#mutpat-alteration-profile-selector").append(
+                    "<option value='" + value["STABLE_ID"] + "'>" +
+                    value["NAME"] + "</option>"
+                );            
+            });
+        }
+
+        function bindListener() {
+            $("#mutpat-alteration-profile-selector").change(function() {
+                var geneIds = window.QuerySession.getQueryGenes();
+                $.each(geneIds, function(index, value) {
+                    //Distroy all the subview instances
+                    var element =  document.getElementById(Prefix.tableDivPrefix + cbio.util.safeProperty(value));
+                    if (typeof(element) !== 'undefined' && element !== null) { 
+                        element.parentNode.removeChild(element); //destroy all the existing instances
+                    }
+                    // element =  document.getElementById(Prefix.plotPrefix + cbio.util.safeProperty(value));
+                    // if (typeof(element) !== 'undefined' && element !== null) { 
+                    //     element.parentNode.removeChild(element); //destroy all the existing instances
+                    // }   
+                    //Empty all the sub divs
+                    $("#" + Prefix.tableDivPrefix + cbio.util.safeProperty(value)).empty();
+                    $("#" + Prefix.plotPrefix + cbio.util.safeProperty(value)).empty();
+                    $("#" + Prefix.loadingImgPrefix + cbio.util.safeProperty(value)).empty();
+                    //Add back loading imgs
+                    $("#" + Prefix.loadingImgPrefix + cbio.util.safeProperty(value)).append(
+                        "<table><tr><td><img style='padding:20px;' src='images/ajax-loader.gif' alt='loading' /></td>" +
+                        "<td>Calculating and rendering may take up to 1 minute.</td></tr></table>" +
+                        "</div>");
+                });
+                //Re-draw the currently selected sub-tab view
+                var curTabIndex = $("#mutpat-tabs").tabs("option", "active");
+                var mutPatSubTabView = new MutPatSubTabView();
+                mutPatSubTabView.init(geneIds[curTabIndex]);
+            });
+        }
+
+        return {
+            init: function(_profileList) {
+                filterProfiles(_profileList);
+                drawProfileSelector();
+                bindListener();
+            }
+        };
+
+    }()); //Closing Alteration Profile Selector
 
     var GroupsSelector = (function() {
 
@@ -335,6 +406,7 @@ var MutPatView = (function() {
                     "<input type='hidden' name='cancer_study_id' value='" + window.QuerySession.getCancerStudyIds()[0] + "'>" +
                     "<input type='hidden' name='gene' value='" + geneId + "'>" +
                     "<input type='hidden' name='profile_id' value='" + $("#mutpat-profile-selector :selected").val() + "'>" + 
+                    "<input type='hidden' name='alteration_profile_id' value='" + $("#mutpat-alteration-profile-selector :selected").val() + "'>" + 
                     "<input type='hidden' name='groups' value='" + $("#mutpat-groups-selector :selected").val() + "'>" + 
                     "<input type='hidden' name='zscore_threshold' value='" + window.QuerySession.getZScoreThreshold() + "'>" +
                     "<input type='hidden' name='case_set_id' value='" + window.QuerySession.getCaseSetId() + "'>" +
@@ -374,7 +446,7 @@ var MutPatView = (function() {
                     //Get the gene name of the selected row
                     var aData = mutPatTableInstance.fnGetData(this);
                     if (null !== aData) {
-                        var pattern = aData[0].split(" ");
+                        var pattern = aData[0].split(",");
                         d3.select("#" + Names.plotId).selectAll('circle').each(
                             function(d) {
                                 var hasPattern = true;
@@ -471,6 +543,7 @@ var MutPatView = (function() {
                          cancer_study_id: window.QuerySession.getCancerStudyIds()[0],
                          gene: _geneId,
                          profile_id: $("#mutpat-profile-selector :selected").val(),
+                         alteration_profile_id: $("#mutpat-alteration-profile-selector :selected").val(),
                          groups: $("#mutpat-groups-selector :selected").val(),
                          zscore_threshold: window.QuerySession.getZScoreThreshold(),
                          case_set_id: window.QuerySession.getCaseSetId(),
@@ -588,7 +661,7 @@ var MutPatView = (function() {
                 var groups = parseInt(_groups);
                 if (groups === 0) groups = 3;
                 $.each(_result, function(i, obj) {
-                    var mutationArr = obj.Mutations.split(" ");
+                    var mutationArr = obj.Alterations.split(",");
                     var expression = parseFloat(obj.Expression);
                     if(!isNaN(expression)) {
                         if(groups != 1) {
@@ -727,6 +800,7 @@ var MutPatView = (function() {
                         cancer_study_id: window.QuerySession.getCancerStudyIds()[0],
                         gene: _geneId,
                         profile_id: $("#mutpat-profile-selector :selected").val(),
+                        alteration_profile_id: $("#mutpat-alteration-profile-selector :selected").val(),
                         groups: $("#mutpat-groups-selector :selected").val(),
                         zscore_threshold: window.QuerySession.getZScoreThreshold(),
                         case_set_id: window.QuerySession.getCaseSetId(),
@@ -818,6 +892,7 @@ var MutPatView = (function() {
             _profile_list = _.extend(_profile_list, result[_gene]);
         });
         ProfileSelector.init(_profile_list);
+        AlterationProfileSelector.init(_profile_list);
         GroupsSelector.init();
         // if (profileList.length === 1) {
         //     $("#mutpat-profile-selector-dropdown").hide();
