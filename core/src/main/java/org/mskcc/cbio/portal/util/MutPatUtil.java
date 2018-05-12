@@ -223,12 +223,15 @@ public class MutPatUtil {
             List<GeneticProfile> geneticProfiles = DaoGeneticProfile.getAllGeneticProfiles(geneticProfile.getCancerStudyId());
             GeneticProfile alterationProfile = null;
             for(GeneticProfile g : geneticProfiles) {
+                if(logger != null) {
+                    logger.warn(g.getGeneticAlterationType().toString() + " " + g.getDatatype());
+                }
                 if(mutation) {
                     if(g.getGeneticAlterationType() == GeneticAlterationType.MUTATION_EXTENDED) {
                         alterationProfile = g;
                     }
                 } else {
-                    if(g.getGeneticAlterationType() == GeneticAlterationType.COPY_NUMBER_ALTERATION && g.getDatatype() == "DISCRETE") {
+                    if(g.getGeneticAlterationType() == GeneticAlterationType.COPY_NUMBER_ALTERATION && g.getDatatype().toLowerCase().contains("discrete")) {
                         alterationProfile = g;
                     }
                 }
@@ -265,12 +268,12 @@ public class MutPatUtil {
                 SQLWarning warning = pstmt.getWarnings();
                 if (warning != null)
                 {
-                    logger.trace("---Warning---");
+                    logger.warn("---Warning---");
                     while (warning != null)
                     {
-                        logger.trace("Message: " + warning.getMessage());
-                        logger.trace("SQLState: " + warning.getSQLState());
-                        logger.trace("Vendor error code: " + warning.getErrorCode());
+                        logger.warn("Message: " + warning.getMessage());
+                        logger.warn("SQLState: " + warning.getSQLState());
+                        logger.warn("Vendor error code: " + warning.getErrorCode());
                         warning = warning.getNextWarning();
                     }
                 }
