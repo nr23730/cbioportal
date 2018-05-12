@@ -50,13 +50,6 @@ import java.util.*;
 public class MutPatUtil {
     private static final Logger logger = Logger.getLogger(MutPatUtil.class);
 
-    @Autowired
-    private static MutationRepositoryLegacy mutationRepositoryLegacy;
-
-    @Autowired
-    private static MutationModelConverter mutationModelConverter;
-    
-    private static MutationDataUtils mutationDataUtils = new MutationDataUtils();
     
     @SuppressWarnings("Duplicates")
     public static ArrayList<String> getSampleIds(String sampleSetId, String sampleIdsKeys) {
@@ -267,7 +260,23 @@ public class MutPatUtil {
             }
             pstmt.setInt(1, alterationProfile.getGeneticProfileId());
             rs = pstmt.executeQuery();
-            logger.trace(rs.getWarnings().getMessage());
+            
+            if (logger != null) {
+                SQLWarning warning = pstmt.getWarnings();
+                if (warning != null)
+                {
+                    logger.trace("---Warning---");
+                    while (warning != null)
+                    {
+                        logger.trace("Message: " + warning.getMessage());
+                        logger.trace("SQLState: " + warning.getSQLState());
+                        logger.trace("Vendor error code: " + warning.getErrorCode());
+                        warning = warning.getNextWarning();
+                    }
+                }
+            }
+            
+            
             while (rs.next()) {
                 String sampleId = DaoSample.getSampleById(rs.getInt("SAMPLE_ID")).getStableId();
                 if(setOfSampleIds.contains(sampleId)) {
