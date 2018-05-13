@@ -385,11 +385,15 @@ var MutPatView = (function() {
                         $('td:eq(0)', nRow).css("font-weight", "bold");
                         $('td:eq(1)', nRow).css("font-weight", "bold");
                         $('td:eq(2)', nRow).css("font-weight", "bold");
-                        if (aData[2] > 0.5) {
-                            $('td:eq(2)', nRow).css("color", "#3B7C3B");
-                        } else {
-                            $('td:eq(2)', nRow).css("color", "#B40404");
-                        }
+                        var colorScale = d3.scale.linear()
+                            .domain([0, 1])
+                            .range(["#B40404", "#3B7C3B"]);
+                        $('td:eq(2)', nRow).css("color", colorScale(aData[2]));
+                        // if (aData[2] > 0.5) {
+                        //     $('td:eq(2)', nRow).css("color", "#3B7C3B");
+                        // } else {
+                        //     $('td:eq(2)', nRow).css("color", "#B40404");
+                        // }
                     },
                     "fnInfoCallback": function( oSettings, iStart, iEnd, iMax, iTotal, sPre ) {
                         if (iTotal === iMax) {
