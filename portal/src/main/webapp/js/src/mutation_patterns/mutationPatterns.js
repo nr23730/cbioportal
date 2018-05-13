@@ -718,7 +718,7 @@ var MutPatView = (function() {
                         xMax + paddingX
                     ])
                     .range([margin.left, (svg_dx-margin.right)])
-                    .interpolate(easeInterpolate(d3.easeInOutQuad()));
+                    .interpolate(easeInterpolate(d3.ease("quad-in-out")));
                 yScale = d3.scale.linear()
                     .domain([
                         0,
@@ -735,7 +735,7 @@ var MutPatView = (function() {
                 svg = d3.select("#" + Names.plotId)
                     .append("svg")
                     .attr("width", svg_dx)
-                    .attr("height", svg_dy)
+                    .attr("height", svg_dy);
                     // .call(d3.behavior.zoom().on("zoom", zoom));
 
 
