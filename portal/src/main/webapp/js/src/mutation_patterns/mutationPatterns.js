@@ -637,7 +637,7 @@ var MutPatView = (function() {
                     tooltip.style("visibility", "visible")
                         .style("top", (d3.event.pageY + 10) + "px")
                         .style("left", (d3.event.pageX + 5) + "px")
-                        .html("<b>" + data.qtip + "</b><br>" + data.x + "<br>" + data.y);
+                        .html("<b>" + data.qtip + "</b><br>Expression: " + data.x + "<br>Alterations: " + data.y);
                     dot.transition()
                         .ease("linear")
                         .duration(200)
@@ -761,7 +761,7 @@ var MutPatView = (function() {
                 // x_axis.select("path").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges");
                 y_axis = svg.append("g")
                     .attr("id", "y_axis")
-                    .attr("transform", "translate(" + margin.left + ", 0)")
+                    .attr("transform", "translate(" + margin.left + ", "+ (margin.top - margin.bottom) +")")
                     // .attr("transform", "translate(75,0)")
                     .call(yAxis)
                     .append("text")
@@ -771,13 +771,13 @@ var MutPatView = (function() {
                     .attr("x", -(chart_dy / 2.0))
                     .attr("dy", ".71em")
                     .style("text-anchor", "end")
-                    .text("Mutation Count");
+                    .text("Alterations");
                 // y_axis.select("path").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges");
 
                 // plot data
                 circles = svg.append("g")
                     .attr("id", "circles")
-                    // .attr("transform", "translate(200, 0)")
+                    .attr("transform", "translate(0, "+(margin.top - margin.bottom)+")")
                     .selectAll("circle")
                     .data(d)
                     .enter()
