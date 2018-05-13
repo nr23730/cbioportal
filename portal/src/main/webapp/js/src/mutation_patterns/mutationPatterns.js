@@ -568,8 +568,8 @@ var MutPatView = (function() {
         var MutPatPlot = function() {
     
             // dimensions
-            var margin = {top: 20, right: 20, bottom: 20, left: 40},
-                style = {size : 2, shape: "circle"},
+            var margin = {top: 20, right: 20, bottom: 50, left: 50},
+                style = {size : 1, shape: "circle"},
                 svg_dx = parseInt(dim.mutpat_plots_width),
                 svg_dy = parseInt(dim.mutpat_plots_height),
                 chart_dx = svg_dx - margin.right - margin.left,
@@ -635,7 +635,7 @@ var MutPatView = (function() {
                     var dot = d3.select(this);
                     var data = dot.datum();
                     tooltip.style("visibility", "visible")
-                        .style("top", (d3.event.pageY + 5) + "px")
+                        .style("top", (d3.event.pageY + 10) + "px")
                         .style("left", (d3.event.pageX + 5) + "px")
                         .html("<b>" + data.qtip + "</b><br>" + data.x + "<br>" + data.y);
                     dot.transition()
@@ -697,8 +697,8 @@ var MutPatView = (function() {
                 convertData(result, groups);
 
                 // Scales
-                var xMin = Math.abs(d3.min(d, function(d) {return d.x;})),
-                    xMax = Math.abs(d3.max(d, function(d) {return d.x;}));
+                var xMin = Math.ceil(Math.abs(d3.min(d, function(d) {return d.x;}))),
+                    xMax = Math.ceil(Math.abs(d3.max(d, function(d) {return d.x;})));
 
                 if(xMin < xMax) {
                     xMin = -xMax;
@@ -707,18 +707,20 @@ var MutPatView = (function() {
                     xMin = -xMin;
                 }
                 
-                var xRange = xMax-xMin,
-                    paddingRange = 0.05,
-                    paddingX = xRange*paddingRange;
-                                
+                // var xRange = xMax-xMin,
+                //     paddingRange = 0.05,
+                //     paddingX = xRange*paddingRange;
+                
+                // xMin = xMin - paddingX;
+                // xMax = xMax + paddingX; 
                 
                 xScale = d3.scale.linear()
                     .domain([
-                        xMin - paddingX,
-                        xMax + paddingX
+                        xMin,
+                        xMax
                     ])
                     .range([margin.left, (svg_dx-margin.right)])
-                    .interpolate(easeInterpolate(d3.ease("quad-in-out")));
+                    .interpolate(easeInterpolate(d3.ease("exp-in-out")));
                 yScale = d3.scale.linear()
                     .domain([
                         0,
@@ -727,9 +729,14 @@ var MutPatView = (function() {
                     .range([(svg_dy-margin.top), margin.bottom]);
 
                 // axes
-                // xAxis = d3.svg.axis().scale(xScale).tickFormat(function(d) { return d.x;}); // d3.axis.axisBottom(xScale);
-                xAxis = d3.svg.axis().scale(xScale).orient("bottom");
-                yAxis = d3.svg.axis().scale(yScale).orient("left");
+                var xAxisTicks = [xMin, xMin/5.0, xMin/10.0, xMin/20.0, xMin/50.0, 0, xMax/50.0, xMax/20.0, xMax/10.0, xMax/5.0, xMax];
+                var formatInteger = d3.format(",");
+                var formatDecimal = d3.format(",.2f");
+                function myFormat(number){
+                    return !(number % 1) ? formatInteger(number) : formatDecimal(number)
+                }
+                xAxis = d3.svg.axis().scale(xScale).orient("bottom").tickValues(xAxisTicks).tickFormat(myFormat).tickSize(1);
+                yAxis = d3.svg.axis().scale(yScale).orient("left").tickSize(1);
                 
                 // init
                 svg = d3.select("#" + Names.plotId)
@@ -751,7 +758,7 @@ var MutPatView = (function() {
                     .attr("y", 28)
                     .style("text-anchor", "end")
                     .text("Expression");
-                x_axis.select("path").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges");
+                // x_axis.select("path").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges");
                 y_axis = svg.append("g")
                     .attr("id", "y_axis")
                     .attr("transform", "translate(" + margin.left + ", 0)")
@@ -765,7 +772,7 @@ var MutPatView = (function() {
                     .attr("dy", ".71em")
                     .style("text-anchor", "end")
                     .text("Mutation Count");
-                y_axis.select("path").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges");
+                // y_axis.select("path").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges");
 
                 // plot data
                 circles = svg.append("g")
