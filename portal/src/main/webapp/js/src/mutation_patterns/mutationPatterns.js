@@ -813,9 +813,9 @@ var MutPatView = (function() {
                     if (isFinite(maxXLow)) {
                         svg.append("line")
                             .attr("x1", xScale(maxXLow))
-                            .attr("y1", margin.bottom)
+                            .attr("y1", margin.top)
                             .attr("x2", xScale(maxXLow))
-                            .attr("y2", svg_dy - margin.top)
+                            .attr("y2", svg_dy - margin.bottom)
                             .style("stroke-width", 1)
                             .style("stroke", "#F00")
                             .style("fill", "none");
@@ -823,9 +823,9 @@ var MutPatView = (function() {
                     if(groups > 2 && isFinite(minXHigh)) {
                         svg.append("line")
                             .attr("x1", xScale(minXHigh))
-                            .attr("y1", margin.bottom)
+                            .attr("y1", margin.top)
                             .attr("x2", xScale(minXHigh))
-                            .attr("y2", svg_dy - margin.top)
+                            .attr("y2", svg_dy - margin.bottom)
                             .style("stroke-width", 1)
                             .style("stroke", "#F00")
                             .style("fill", "none");
