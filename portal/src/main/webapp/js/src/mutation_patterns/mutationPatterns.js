@@ -62,6 +62,7 @@ var MutPatView = (function() {
     var profileList = []; //Profile Lists for all queried genes
     var alterationProfileList = []; //Profile Lists for all queried genes
     var groupsList = [{"ID":1, "NAME":"1"}, {"ID":2, "NAME":"2"}, {"ID":5, "NAME":"5"}, {"ID":10, "NAME":"10"}, {"ID":0, "NAME":"Use Z-Scores"}]; //Groups Lists for all queried genes
+    var supportList = [{"ID":0.1, "NAME":"0.1"}, {"ID":0.25, "NAME":"0.25"}, {"ID":0.33, "NAME":"0.33"}, {"ID":0.5, "NAME":"0.5"}, {"ID":0.75, "NAME":"0.75"}]; 
 
     //Sub tabs
     var Tabs = (function() {
@@ -289,6 +290,57 @@ var MutPatView = (function() {
         };
 
     }()); //Closing Groups Selector
+    
+    
+    var SupportSelector = (function() {
+
+        
+        function drawSupportSelector() {
+            $("#mutpat-support-selector-dropdown").append(
+                "Minimum Support " +
+                "<select id='mutpat-support-selector'></select>");
+            $.each(supportList, function(index, value) {
+                $("#mutpat-support-selector").append(
+                    "<option value='" + value["ID"] + "'>" +
+                    value["NAME"] + "</option>"
+                );
+            });
+        }
+
+        function bindListener() {
+            $("#mutpat-support-selector").change(function() {
+                var geneIds = window.QuerySession.getQueryGenes();
+                $.each(geneIds, function(index, value) {
+                    //Destroy all the subview instances
+                    var element =  document.getElementById(Prefix.tableDivPrefix + cbio.util.safeProperty(value));
+                    if (typeof(element) !== 'undefined' && element !== null) {
+                        element.parentNode.removeChild(element); //destroy all the existing instances
+                    }
+                    //Empty all the sub divs
+                    $("#" + Prefix.tableDivPrefix + cbio.util.safeProperty(value)).empty();
+                    $("#" + Prefix.plotPrefix + cbio.util.safeProperty(value)).empty();
+                    $("#" + Prefix.loadingImgPrefix + cbio.util.safeProperty(value)).empty();
+                    //Add back loading imgs
+                    $("#" + Prefix.loadingImgPrefix + cbio.util.safeProperty(value)).append(
+                        "<table><tr><td><img style='padding:20px;' src='images/ajax-loader.gif' alt='loading' /></td>" +
+                        "<td>Calculating and rendering may take up to 1 minute.</td></tr></table>" +
+                        "</div>");
+                });
+                //Re-draw the currently selected sub-tab view
+                var curTabIndex = $("#mutpat-tabs").tabs("option", "active");
+                var mutPatSubTabView = new MutPatSubTabView();
+                mutPatSubTabView.init(geneIds[curTabIndex]);
+            });
+        }
+
+        return {
+            init: function() {
+                drawSupportSelector();
+                bindListener();
+            }
+        };
+
+    }()); //Closing Support Selector
 
     //Instance of each sub tab
     var MutPatSubTabView = function() {
@@ -382,6 +434,7 @@ var MutPatView = (function() {
                     "<input type='hidden' name='profile_id' value='" + $("#mutpat-profile-selector :selected").val() + "'>" + 
                     "<input type='hidden' name='alteration_profile_id' value='" + $("#mutpat-alteration-profile-selector :selected").val() + "'>" + 
                     "<input type='hidden' name='groups' value='" + $("#mutpat-groups-selector :selected").val() + "'>" + 
+                    "<input type='hidden' name='support' value='" + $("#mutpat-support-selector :selected").val() + "'>" + 
                     "<input type='hidden' name='zscore_threshold' value='" + window.QuerySession.getZScoreThreshold() + "'>" +
                     "<input type='hidden' name='case_set_id' value='" + window.QuerySession.getCaseSetId() + "'>" +
                     "<input type='hidden' name='case_ids_key' value='" + window.QuerySession.getCaseIdsKey() + "'>" +
@@ -516,6 +569,7 @@ var MutPatView = (function() {
                          profile_id: $("#mutpat-profile-selector :selected").val(),
                          alteration_profile_id: $("#mutpat-alteration-profile-selector :selected").val(),
                          groups: $("#mutpat-groups-selector :selected").val(),
+                         support: $("#mutpat-support-selector :selected").val(),
                          zscore_threshold: window.QuerySession.getZScoreThreshold(),
                          case_set_id: window.QuerySession.getCaseSetId(),
                          case_ids_key: window.QuerySession.getCaseIdsKey(),
@@ -801,6 +855,7 @@ var MutPatView = (function() {
                         profile_id: $("#mutpat-profile-selector :selected").val(),
                         alteration_profile_id: $("#mutpat-alteration-profile-selector :selected").val(),
                         groups: $("#mutpat-groups-selector :selected").val(),
+                        support: $("#mutpat-support-selector :selected").val(),
                         zscore_threshold: window.QuerySession.getZScoreThreshold(),
                         case_set_id: window.QuerySession.getCaseSetId(),
                         case_ids_key: window.QuerySession.getCaseIdsKey(),
@@ -892,6 +947,7 @@ var MutPatView = (function() {
         ProfileSelector.init(_profile_list);
         AlterationProfileSelector.init(_profile_list);
         GroupsSelector.init();
+        SupportSelector.init();
         // if (profileList.length === 1) {
         //     $("#mutpat-profile-selector-dropdown").hide();
         // }

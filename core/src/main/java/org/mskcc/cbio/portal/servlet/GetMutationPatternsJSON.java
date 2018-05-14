@@ -150,6 +150,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
         boolean mutation = getBoolFromAlterationProfile(httpServletRequest.getParameter("alteration_profile_id"));
         
         int groups = NumberUtils.toInt(httpServletRequest.getParameter("groups"), 1);
+        double minSupport = NumberUtils.toDouble(httpServletRequest.getParameter("support"), 0.1);
         double zScoreThreshold = NumberUtils.toDouble(httpServletRequest.getParameter("zscore_threshold"), 2.0);
         
         DaoGeneOptimized daoGeneOptimized = DaoGeneOptimized.getInstance();
@@ -207,7 +208,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
                                 transactions.add(new ArrayList<>(entry.getValue()));
                             }
 
-                            FPGrowth fpg = new FPGrowth().setMinSupport(0.1);
+                            FPGrowth fpg = new FPGrowth().setMinSupport(minSupport);
                             JavaRDD<List<String>> rdd = sc.parallelize(transactions);
                             FPGrowthModel<String> fpgModel = fpg.run(rdd);
 
