@@ -388,8 +388,8 @@ var MutPatView = (function() {
                         $('td:eq(1)', nRow).css("font-weight", "bold");
                         $('td:eq(2)', nRow).css("font-weight", "bold");
                         var colorScale = d3.scale.linear()
-                            .domain([0, 1])
-                            .range(["#B40404", "#3B7C3B"]);
+                            .domain([0, 0.33, 1])
+                            .range(["#FF0000", "#FFFF00", "#00FF00"]);
                         $('td:eq(2)', nRow).css("color", colorScale(aData[2]));
                         // if (aData[2] > 0.5) {
                         //     $('td:eq(2)', nRow).css("color", "#3B7C3B");
