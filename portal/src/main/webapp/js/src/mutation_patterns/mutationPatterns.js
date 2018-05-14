@@ -338,7 +338,7 @@ var MutPatView = (function() {
 
                 //Configure the datatable with  jquery
                 mutPatTableInstance = $("#" + Names.tableId + position).dataTable({
-                    "sDom": '<"H"f<"mutpat-table-filter-magnitude">>t<"F"i<"datatable-paging"p>>',
+                    "sDom": '<"H"f<"mutpat-table-filter-magnitude_' + position + '">>t<"F"i<"datatable-paging"p>>',
                     "bPaginate": true,
                     "sPaginationType": "two_button",
                     "bInfo": true,
@@ -354,7 +354,7 @@ var MutPatView = (function() {
                         },
                         {
                             "sType": 'mutpat-absolute-value',
-                            "bSearchable": false,
+                            "bSearchable": true,
                             "aTargets": [ 1 ],
                             "sWidth": "22%"
                         },
@@ -368,9 +368,7 @@ var MutPatView = (function() {
                         // },
                         {
                             "sType": 'mutpat-absolute-value',
-                            //TODO: should be disabled; this is just a quick fix, otherwise the fnfilter would work on this column
-                            //"bSearchable": false, 
-                            "bSearchable": true, 
+                            "bSearchable": false, 
                             "aTargets": [ 2 ],
                             "sWidth": "22%"
                         }
@@ -426,17 +424,17 @@ var MutPatView = (function() {
 
             function attachMagnitudeFilter(position) { 
                 //Add drop down filter for single/all pattern display
-                $("#" + Names.tableDivId + position).find('.mutpat-table-filter-magnitude').append(
-                    "<select id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "' style='width: 230px; margin-left: 5px;'>" +
+                $("#" + Names.tableDivId + position).find('.mutpat-table-filter-magnitude_' + position).append(
+                    "<select id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-" + position + "' style='width: 230px; margin-left: 5px;'>" +
                     "<option value='all'>Show All</option>" +
                     "<option value='singleMagnitude'>Show Only Single Genes</option>" +
                     "<option value='multipleMagnitude'>Show Only Gene Patterns</option>" +
                     "</select>");
-                $("select#mutpat-table-select-" + cbio.util.safeProperty(geneId)).change(function () {
+                $("select#mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-" + position).change(function () {
                     if ($(this).val() === "singleMagnitude") {
-                        mutPatTableInstance.fnFilter("1", 1, false);
+                        mutPatTableInstance.fnFilter("1", 1, false, false);
                     } else if ($(this).val() === "multipleMagnitude") {
-                        mutPatTableInstance.fnFilter('^(?!1$).*$', 1, true);
+                        mutPatTableInstance.fnFilter('^(?!1$).*$', 1, true, false);
                     } else if ($(this).val() === "all") {
                         mutPatTableInstance.fnFilter("", 1);
                     }
