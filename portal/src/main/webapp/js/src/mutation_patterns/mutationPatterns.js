@@ -320,8 +320,7 @@ var MutPatView = (function() {
             },
             geneId = "", //Gene of this sub tab instance
             mutpatTableArr = [], //Data array for the datatable
-            mutPatTableInstance = "",
-            meanExp = 0;
+            mutPatTableInstance = "";
 
         var MutPatTable = function(position) {
 
@@ -442,11 +441,6 @@ var MutPatView = (function() {
                 });
             }
             
-            function attachMeanExpression(position) { 
-                //Add drop down filter for single/all pattern display
-                $("#" + Names.tableDivId + position).find('.mean_exp_' + position).append(
-                    "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-" + position + "' style='width: 230px; margin-left: 5px;'>Mean Expression: " + meanExp.toFixed(3) + "</label>");
-            }
 
             function attachRowListener(position) {
                 $("#" + Names.tableId + position + " tbody tr").live('click', function (event) {
@@ -507,7 +501,7 @@ var MutPatView = (function() {
                 // Get ID for table
                 var id = 0;
                 if (position === "R") {
-                    if (_groups == 0) {
+                    if (_groups === 0) {
                         id = 2;
                     } else {
                         id = _groups-1;
@@ -522,7 +516,6 @@ var MutPatView = (function() {
                     tmp_arr.push(obj.magnitude);
                     tmp_arr.push(obj.support.toFixed(3));
                     mutpatTableArr.push(tmp_arr);
-                    meanExp = meanExp + (parseFloat(obj.support) - meanExp) / (i+1);
                 });   
             }
 
@@ -532,7 +525,7 @@ var MutPatView = (function() {
                 if (result.length === 0) {
                     $("#" + Names.tableDivId + position).append("There are no alteration patterns with an support of ?? or higher.");
                     attachDownloadFullResultButton();                    
-                } else if (position === "R" && groups == 1) {
+                } else if (position === "R" && groups === 1) {
                     $("#" + Names.tableDivId + position).append("There is only one group to display.");
                 } else {
                     //Render datatable
@@ -543,7 +536,6 @@ var MutPatView = (function() {
                         attachDownloadFullResultButton();
                     }
                     attachMagnitudeFilter(position);
-                    attachMeanExpression(position);
                     attachRowListener(position);
                     initTable();                    
                 }
@@ -569,7 +561,7 @@ var MutPatView = (function() {
                         "getMutPat.do", 
                         paramsGetMutPatData, 
                         function(result) {
-                            getMutPatDataCallBack(result, paramsGetMutPatData.groups);
+                            getMutPatDataCallBack(result, parseInt(paramsGetMutPatData.groups));
                         },
                         "json"
                     );
@@ -599,7 +591,11 @@ var MutPatView = (function() {
                 xScale = {},
                 yScale = {},
                 maxXLow = Number.NEGATIVE_INFINITY,
-                minXHigh = Number.POSITIVE_INFINITY;
+                minXHigh = Number.POSITIVE_INFINITY,
+                meanXLow = 0,
+                meanXHigh = 0,
+                meanYLow = 0,
+                meanYHigh = 0;
             
 
             var tooltip = d3.select("body")//("#" + Names.plotId)
@@ -626,6 +622,15 @@ var MutPatView = (function() {
             //     circles.attr("cx", function(d) { return new_xScale(d.x); });
             // }
 
+            function attachMeanExpression(groups) {
+                //Add drop down filter for single/all pattern display
+                $("#" + Names.tableDivId + "L").find('.mean_exp_L').append(
+                    "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-L' style='width: 230px; margin-left: 5px;'>Mean Expression: " + meanXLow.toFixed(3) + "Mean Count: " + meanYLow.toFixed(0) + "</label>");
+                if(parseInt(groups) !== 1) {
+                    $("#" + Names.tableDivId + "R").find('.mean_exp_R').append(
+                        "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-R' style='width: 230px; margin-left: 5px;'>Mean Expression: " + meanXHigh.toFixed(3) + "Mean Count: " + meanYHigh.toFixed(0) + "</label>");
+                } 
+            }
             
             function addQtips() {
 
@@ -675,20 +680,32 @@ var MutPatView = (function() {
                 var groups = parseInt(_groups);
                 if (groups === 0) groups = 3;
                 $.each(_result, function(i, obj) {
-                    var mutationArr = obj.Alterations.split(",");
+                    var alterationArr = obj.Alterations.split(",");
                     var expression = parseFloat(obj.Expression);
                     if(!isNaN(expression)) {
-                        if(groups != 1) {
-                            if((parseInt(obj.Group) === 0) && expression > maxXLow) {
-                                maxXLow = expression;
-                            } else if ((parseInt(obj.Group) === (groups-1)) && expression < minXHigh) {
-                                minXHigh = expression;
+                        var altCount = alterationArr.length;
+                        if(groups !== 1) {
+                            if(parseInt(obj.Group) === 0) {
+                                meanXLow = meanXLow + (expression - meanXLow) / (i+1);
+                                meanYLow = meanYLow + (altCount - meanYLow) / (i+1);
+                                if(expression > maxXLow) {
+                                    maxXLow = expression;
+                                }
+                            } else if (parseInt(obj.Group) === (groups-1)) {
+                                meanXHigh = meanXHigh + (expression - meanXHigh) / (i+1);
+                                meanYHigh = meanYHigh + (altCount - meanYHigh) / (i+1);
+                                if(expression < minXHigh) {
+                                    minXHigh = expression;
+                                }
                             } 
+                        } else {
+                            meanXLow = meanXLow + (expression - meanXLow) / (i+1);
+                            meanYLow = meanYLow + (altCount - meanYLow) / (i+1);
                         }
                         var datapoint = {
                             x: expression,
-                            y: mutationArr.length,
-                            mutations: mutationArr,
+                            y: altCount,
+                            mutations: alterationArr,
                             qtip: obj.SampleId
                         };
                         d.push(datapoint);
@@ -708,7 +725,7 @@ var MutPatView = (function() {
             function getDataCallBack(result, groups) {
                 
                 convertData(result, groups);
-
+                attachMeanExpression(groups);
                 // Scales
                 var xMin = Math.ceil(Math.abs(d3.min(d, function(d) {return d.x;}))),
                     xMax = Math.ceil(Math.abs(d3.max(d, function(d) {return d.x;})));
