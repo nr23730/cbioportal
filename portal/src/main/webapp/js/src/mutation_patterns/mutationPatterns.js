@@ -112,13 +112,7 @@ var MutPatView = (function() {
         function filterProfiles(_profileList) {
             $.each(_profileList, function(i, obj) {
                 if (obj["GENETIC_ALTERATION_TYPE"] === "MRNA_EXPRESSION" || obj["GENETIC_ALTERATION_TYPE"] === "PROTEIN_LEVEL") {
-                    // if (obj["STABLE_ID"].toLowerCase().indexOf("zscores") !== -1) {
-                    //     if (obj["STABLE_ID"].toLowerCase().indexOf("merged_median_zscores") !== -1) {
-                    //         profileList.push(obj);
-                    //     }
-                    // } else {
-                        profileList.push(obj);
-                    // }
+                    profileList.push(obj);
                 } else if (obj["GENETIC_ALTERATION_TYPE"] === "MUTATION_EXTENDED") {
                     has_mutation_data = true;
                 }
@@ -152,10 +146,6 @@ var MutPatView = (function() {
                     if (typeof(element) !== 'undefined' && element !== null) { 
                         element.parentNode.removeChild(element); //destroy all the existing instances
                     }
-                    // element =  document.getElementById(Prefix.plotPrefix + cbio.util.safeProperty(value));
-                    // if (typeof(element) !== 'undefined' && element !== null) { 
-                    //     element.parentNode.removeChild(element); //destroy all the existing instances
-                    // }   
                     //Empty all the sub divs
                     $("#" + Prefix.tableDivPrefix + cbio.util.safeProperty(value)).empty();
                     $("#" + Prefix.plotPrefix + cbio.util.safeProperty(value)).empty();
@@ -223,10 +213,6 @@ var MutPatView = (function() {
                     if (typeof(element) !== 'undefined' && element !== null) { 
                         element.parentNode.removeChild(element); //destroy all the existing instances
                     }
-                    // element =  document.getElementById(Prefix.plotPrefix + cbio.util.safeProperty(value));
-                    // if (typeof(element) !== 'undefined' && element !== null) { 
-                    //     element.parentNode.removeChild(element); //destroy all the existing instances
-                    // }   
                     //Empty all the sub divs
                     $("#" + Prefix.tableDivPrefix + cbio.util.safeProperty(value)).empty();
                     $("#" + Prefix.plotPrefix + cbio.util.safeProperty(value)).empty();
@@ -278,10 +264,6 @@ var MutPatView = (function() {
                     if (typeof(element) !== 'undefined' && element !== null) {
                         element.parentNode.removeChild(element); //destroy all the existing instances
                     }
-                    // element =  document.getElementById(Prefix.plotPrefix + cbio.util.safeProperty(value));
-                    // if (typeof(element) !== 'undefined' && element !== null) { 
-                    //     element.parentNode.removeChild(element); //destroy all the existing instances
-                    // }   
                     //Empty all the sub divs
                     $("#" + Prefix.tableDivPrefix + cbio.util.safeProperty(value)).empty();
                     $("#" + Prefix.plotPrefix + cbio.util.safeProperty(value)).empty();
@@ -358,14 +340,6 @@ var MutPatView = (function() {
                             "aTargets": [ 1 ],
                             "sWidth": "22%"
                         },
-                        // {
-                        //     "sType": 'mutpat-absolute-value',
-                        //     //TODO: should be disabled; this is just a quick fix, otherwise the fnfilter would work on this column
-                        //     //"bSearchable": false, 
-                        //     "bSearchable": true, 
-                        //     "aTargets": [ 2 ],
-                        //     "sWidth": "22%"
-                        // },
                         {
                             "sType": 'mutpat-absolute-value',
                             "bSearchable": false, 
@@ -389,11 +363,6 @@ var MutPatView = (function() {
                             .domain([0, 0.33, 1])
                             .range(["#FF0000", "#FFFF00", "#00FF00"]);
                         $('td:eq(2)', nRow).css("color", colorScale(aData[2]));
-                        // if (aData[2] > 0.5) {
-                        //     $('td:eq(2)', nRow).css("color", "#3B7C3B");
-                        // } else {
-                        //     $('td:eq(2)', nRow).css("color", "#B40404");
-                        // }
                     },
                     "fnInfoCallback": function( oSettings, iStart, iEnd, iMax, iTotal, sPre ) {
                         if (iTotal === iMax) {
@@ -469,10 +438,6 @@ var MutPatView = (function() {
                                 }
                             }
                         );
-                    //     $("#" + Names.plotId).empty();
-                    //     $("#" + Names.plotId).append("<img style='padding:220px;' src='images/ajax-loader.gif' alt='loading' />");
-                    //     var mutpatPlots = new MutpatPlots();
-                    //     mutpatPlots.init(Names.plotId, geneId, aData[0], aData[2], aData[3], $("#mutpat-profile-selector :selected").val());
                     }
                 });
             }
@@ -634,20 +599,6 @@ var MutPatView = (function() {
             
             function addQtips() {
 
-                // d3.select("#" + Names.plotId).selectAll('circle').each(
-                //     function(d) {
-                //         $(this).qtip(
-                //             {
-                //                 content: {text: "<font size=2>" + d.qtip},
-                //                 style: { classes: 'qtip-light qtip-rounded qtip-shadow qtip-lightyellow' },
-                //                 show: {event: "mouseover"},
-                //                 hide: {fixed:true, delay: 100, event: "mouseout"},
-                //                 position: {my:'left bottom',at:'top right', viewport: $(window)}
-                //             }
-                //         );
-                //     }
-                // );
-
                 //Hover Animation
                 var mouseOn = function() {
                     var dot = d3.select(this);
@@ -780,7 +731,6 @@ var MutPatView = (function() {
                 x_axis = svg.append("g")
                     .attr("id", "x_axis")
                     .attr("transform", "translate(0," + (svg_dy - margin.bottom) + ")")
-                    // .attr("transform", "translate(75,0)")
                     .call(xAxis)
                     .append("text")
                     .attr("class", "label")
@@ -788,11 +738,9 @@ var MutPatView = (function() {
                     .attr("y", 28)
                     .style("text-anchor", "end")
                     .text("Expression");
-                // x_axis.select("path").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges");
                 y_axis = svg.append("g")
                     .attr("id", "y_axis")
                     .attr("transform", "translate(" + margin.left + ", "+ (margin.top - margin.bottom) +")")
-                    // .attr("transform", "translate(75,0)")
                     .call(yAxis)
                     .append("text")
                     .attr("class", "label")
@@ -802,7 +750,6 @@ var MutPatView = (function() {
                     .attr("dy", ".71em")
                     .style("text-anchor", "end")
                     .text("Alterations");
-                // y_axis.select("path").style("fill", "none").style("stroke", "#000").style("shape-rendering", "crispEdges");
 
                 // plot data
                 circles = svg.append("g")
@@ -815,18 +762,13 @@ var MutPatView = (function() {
                     .attr("r", style.size)
                     .attr("cx", function(d) { return xScale(d.x); })
                     .attr("cy", function(d) { return yScale(d.y); });
-                    // .attr()
-                    // .style("fill", function(d) {
-                    //     var norm_color = colorScale(d[1]);
-                    //     return d3.interpolateInferno(norm_color)
-                    // });
                 
                 addQtips();
                 
                 // Draw Group lines
                 groups = parseInt(groups);
                 if(groups === 0) groups = 3; // z-scores
-                if(groups != 1) {
+                if(groups !== 1) {
                     if (isFinite(maxXLow)) {
                         svg.append("line")
                             .attr("x1", xScale(maxXLow))
@@ -909,7 +851,6 @@ var MutPatView = (function() {
                 "</tr>" +
                 "</table>");
             $("#" + Names.tableDivId).addClass("mutpat-table");
-            // $("#" + Names.tableDivId).addClass("mutpat-plots");
             var tableIdL = Names.tableId + "L";
             var tableIdR = Names.tableId + "R";
             $("#" + tableDivIdL).append(
