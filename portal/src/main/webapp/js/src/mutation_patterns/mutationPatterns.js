@@ -320,7 +320,8 @@ var MutPatView = (function() {
             },
             geneId = "", //Gene of this sub tab instance
             mutpatTableArr = [], //Data array for the datatable
-            mutPatTableInstance = "";
+            mutPatTableInstance = "",
+            meanExp = 0;
 
         var MutPatTable = function(position) {
 
@@ -338,7 +339,7 @@ var MutPatView = (function() {
 
                 //Configure the datatable with  jquery
                 mutPatTableInstance = $("#" + Names.tableId + position).dataTable({
-                    "sDom": '<"H"f<"mutpat-table-filter-magnitude_' + position + '">>t<"F"i<"datatable-paging"p>>',
+                    "sDom": '<"H"f<"mutpat-table-filter-magnitude_' + position + '"><"mean_exp_' + position + '">>t<"F"i<"datatable-paging"p>>',
                     "bPaginate": true,
                     "sPaginationType": "two_button",
                     "bInfo": true,
@@ -440,6 +441,12 @@ var MutPatView = (function() {
                     }
                 });
             }
+            
+            function attachMeanExpression(position) { 
+                //Add drop down filter for single/all pattern display
+                $("#" + Names.tableDivId + position).find('.mean_exp_' + position).append(
+                    "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-" + position + "' style='width: 230px; margin-left: 5px;'>Mean Expression: " + meanExp.toFixed(3) + "</label>");
+            }
 
             function attachRowListener(position) {
                 $("#" + Names.tableId + position + " tbody tr").live('click', function (event) {
@@ -515,6 +522,7 @@ var MutPatView = (function() {
                     tmp_arr.push(obj.magnitude);
                     tmp_arr.push(obj.support.toFixed(3));
                     mutpatTableArr.push(tmp_arr);
+                    meanExp = meanExp + (parseFloat(obj.support) - meanExp) / (i+1);
                 });   
             }
 
@@ -535,6 +543,7 @@ var MutPatView = (function() {
                         attachDownloadFullResultButton();
                     }
                     attachMagnitudeFilter(position);
+                    attachMeanExpression(position);
                     attachRowListener(position);
                     initTable();                    
                 }
