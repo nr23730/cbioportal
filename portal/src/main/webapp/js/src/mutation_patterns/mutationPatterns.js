@@ -55,7 +55,7 @@ var MutPatView = (function() {
             mutpat_table_width: "500px",
             mutpat_tables_width: "1120px",
             mutpat_plots_width: "1120px",
-            mutpat_plots_height: "200px"
+            mutpat_plots_height: "300px"
         },
         has_mutation_data = false;
     //Containers    
@@ -727,7 +727,7 @@ var MutPatView = (function() {
                     ])
                     .range([margin.left, (svg_dx-margin.right)])
                     .interpolate(easeInterpolate(d3.ease("exp-in-out")));
-                yScale = d3.scale.linear()
+                yScale = d3.scale.sqrt()
                     .domain([
                         0,
                         d3.max(d, function(d) {return d.y;})
