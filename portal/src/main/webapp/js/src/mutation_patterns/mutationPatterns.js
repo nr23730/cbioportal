@@ -354,7 +354,7 @@ var MutPatView = (function() {
             },
             geneId = "", //Gene of this sub tab instance
             mutpatTableArr = [], //Data array for the datatable
-            mutPatTableInstance = "";
+            mutPatTableInstance = {};
 
         var MutPatTable = function(position) {
 
@@ -371,7 +371,7 @@ var MutPatView = (function() {
                 );
 
                 //Configure the datatable with  jquery
-                mutPatTableInstance = $("#" + Names.tableId + position).dataTable({
+                mutPatTableInstance[position] = $("#" + Names.tableId + position).dataTable({
                     "sDom": '<"H"f<"mutpat-table-filter-magnitude_' + position + '"><"mean_exp_' + position + '">>t<"F"i<"datatable-paging"p>>',
                     "bPaginate": true,
                     "sPaginationType": "two_button",
@@ -454,11 +454,11 @@ var MutPatView = (function() {
                     "</select>");
                 $("select#mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-" + position).change(function () {
                     if ($(this).val() === "singleMagnitude") {
-                        mutPatTableInstance.fnFilter("1", 1, false, false);
+                        mutPatTableInstance[position].fnFilter("1", 1, false, false);
                     } else if ($(this).val() === "multipleMagnitude") {
-                        mutPatTableInstance.fnFilter('^(?!1$).*$', 1, true, false);
+                        mutPatTableInstance[position].fnFilter('^(?!1$).*$', 1, true, false);
                     } else if ($(this).val() === "all") {
-                        mutPatTableInstance.fnFilter("", 1);
+                        mutPatTableInstance[position].fnFilter("", 1);
                     }
                 });
             }
@@ -467,12 +467,12 @@ var MutPatView = (function() {
             function attachRowListener(position) {
                 $("#" + Names.tableId + position + " tbody tr").live('click', function (event) {
                     //Highlight selected row
-                    $(mutPatTableInstance.fnSettings().aoData).each(function (){
+                    $(mutPatTableInstance[position].fnSettings().aoData).each(function (){
                         $(this.nTr).removeClass('row_selected');
                     });
                     $(event.target.parentNode).addClass('row_selected');
                     //Get the gene name of the selected row
-                    var aData = mutPatTableInstance.fnGetData(this);
+                    var aData = mutPatTableInstance[position].fnGetData(this);
                     if (null !== aData) {
                         var pattern = aData[0].split(",");
                         d3.select("#" + Names.plotId).selectAll('circle').each(
@@ -495,10 +495,21 @@ var MutPatView = (function() {
                 });
             }
 
-            function initTable() {
+            function initTable(position) {
                 //Init with selecting the first row
                 // $('#' + Names.tableId + position + ' tbody tr:eq(0)').click();
                 // $('#' + Names.tableId + position + ' tbody tr:eq(0)').addClass("row_selected");
+            }
+
+            function attachMeanExpression(position, groups) {
+                var means = $('#'+Names.plotId).data('means');
+                if (position == "L") {
+                    $("#" + Names.tableDivId + "L").find('.mean_exp_L').append(
+                        "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-L' style='width: 230px; margin-left: 5px;'>Mean Expression: " + means.xLow.toFixed(3) + "Mean Count: " + means.yLow.toFixed(0) + "</label>");
+                } else if(position == "R" && parseInt(groups) !== 1) {
+                    $("#" + Names.tableDivId + "R").find('.mean_exp_R').append(
+                        "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-R' style='width: 230px; margin-left: 5px;'>Mean Expression: " + means.xHigh.toFixed(3) + "Mean Count: " + means.yHigh.toFixed(0) + "</label>");
+                }
             }
 
             //Overwrite some datatable function for custom filtering
@@ -555,6 +566,7 @@ var MutPatView = (function() {
                     }
                     attachMagnitudeFilter(position);
                     attachRowListener(position);
+                    attachMeanExpression(position, groups);
                     initTable();                    
                 }
             }
@@ -641,15 +653,7 @@ var MutPatView = (function() {
             //     circles.attr("cx", function(d) { return new_xScale(d.x); });
             // }
 
-            function attachMeanExpression(groups) {
-                //Add drop down filter for single/all pattern display
-                $("#" + Names.tableDivId + "L").find('.mean_exp_L').append(
-                    "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-L' style='width: 230px; margin-left: 5px;'>Mean Expression: " + meanXLow.toFixed(3) + "Mean Count: " + meanYLow.toFixed(0) + "</label>");
-                if(parseInt(groups) !== 1) {
-                    $("#" + Names.tableDivId + "R").find('.mean_exp_R').append(
-                        "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-R' style='width: 230px; margin-left: 5px;'>Mean Expression: " + meanXHigh.toFixed(3) + "Mean Count: " + meanYHigh.toFixed(0) + "</label>");
-                } 
-            }
+
             
             function addQtips() {
 
@@ -716,6 +720,8 @@ var MutPatView = (function() {
                         d.push(datapoint);
                     }
                 });
+
+                $('#'+ Names.plotId).data('means', { xLow: meanXLow, yLow: meanYLow, xHigh: meanXHigh, yHigh: meanYHigh});
             }
             
             function easeInterpolate(ease) {
@@ -730,7 +736,8 @@ var MutPatView = (function() {
             function getDataCallBack(result, groups) {
                 
                 convertData(result, groups);
-                attachMeanExpression(groups);
+                // attachMeanExpression(groups);
+                
                 // Scales
                 var xMin = Math.ceil(Math.abs(d3.min(d, function(d) {return d.x;}))),
                     xMax = Math.ceil(Math.abs(d3.max(d, function(d) {return d.x;})));
