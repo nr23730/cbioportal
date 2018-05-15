@@ -686,8 +686,12 @@ var MutPatView = (function() {
             
             function convertData(_result, _groups) {
                 d = [];
-                var groups = parseInt(_groups);
+                var countLow = 1,
+                    countHigh = 1,
+                    groups = parseInt(_groups);
+                
                 if (groups === 0) groups = 3;
+                
                 $.each(_result, function(i, obj) {
                     var alterationArr = obj.Alterations.split(",");
                     var expression = parseFloat(obj.Expression);
@@ -695,14 +699,16 @@ var MutPatView = (function() {
                         var altCount = alterationArr.length;
                         if(groups !== 1) {
                             if(parseInt(obj.Group) === 0) {
-                                meanXLow = meanXLow + (expression - meanXLow) / (i+1);
-                                meanYLow = meanYLow + (altCount - meanYLow) / (i+1);
+                                meanXLow = meanXLow + (expression - meanXLow) / countLow;
+                                meanYLow = meanYLow + (altCount - meanYLow) / countLow;
+                                countLow++;
                                 if(expression > maxXLow) {
                                     maxXLow = expression;
                                 }
                             } else if (parseInt(obj.Group) === (groups-1)) {
-                                meanXHigh = meanXHigh + (expression - meanXHigh) / (i+1);
-                                meanYHigh = meanYHigh + (altCount - meanYHigh) / (i+1);
+                                meanXHigh = meanXHigh + (expression - meanXHigh) / countHigh;
+                                meanYHigh = meanYHigh + (altCount - meanYHigh) / countHigh;
+                                countHigh++;
                                 if(expression < minXHigh) {
                                     minXHigh = expression;
                                 }
