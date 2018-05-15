@@ -412,8 +412,8 @@ var MutPatView = (function() {
                         $('td:eq(1)', nRow).css("font-weight", "bold");
                         $('td:eq(2)', nRow).css("font-weight", "bold");
                         var colorScale = d3.scale.linear()
-                            .domain([0, 0.33, 1])
-                            .range(["#FF0000", "#FFFF00", "#00FF00"]);
+                            .domain([0.1, 0.33, 1])
+                            .range(["#CC0000", "#CCCC00", "#00CC00"]);
                         $('td:eq(2)', nRow).css("color", colorScale(aData[2]));
                     },
                     "fnInfoCallback": function( oSettings, iStart, iEnd, iMax, iTotal, sPre ) {
