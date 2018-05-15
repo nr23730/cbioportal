@@ -467,8 +467,10 @@ var MutPatView = (function() {
             function attachRowListener(position) {
                 $("#" + Names.tableId + position + " tbody tr").live('click', function (event) {
                     //Highlight selected row
-                    $(mutPatTableInstance[position].fnSettings().aoData).each(function (){
-                        $(this.nTr).removeClass('row_selected');
+                    $.each(mutPatTableInstance, function(i, instance) {
+                        $(instance.fnSettings().aoData).each(function (){
+                            $(this.nTr).removeClass('row_selected');
+                        });
                     });
                     $(event.target.parentNode).addClass('row_selected');
                     //Get the gene name of the selected row
