@@ -61,7 +61,7 @@ var MutPatView = (function() {
     //Containers    
     var profileList = []; //Profile Lists for all queried genes
     var alterationProfileList = []; //Profile Lists for all queried genes
-    var groupsList = [{"ID":1, "NAME":"1"}, {"ID":2, "NAME":"2"}, {"ID":5, "NAME":"5"}, {"ID":10, "NAME":"10"}, {"ID":0, "NAME":"Use Z-Scores"}]; //Groups Lists for all queried genes
+    var groupsList = [ {"ID":10, "NAME":"10"}, {"ID":5, "NAME":"5"}, {"ID":2, "NAME":"2"}, {"ID":1, "NAME":"1"}, {"ID":0, "NAME":"Use Z-Scores"}]; //Groups Lists for all queried genes
     var supportList = [{"ID":0.1, "NAME":"0.1"}, {"ID":0.25, "NAME":"0.25"}, {"ID":0.33, "NAME":"0.33"}, {"ID":0.5, "NAME":"0.5"}, {"ID":0.75, "NAME":"0.75"}]; 
 
     //Sub tabs
@@ -858,7 +858,25 @@ var MutPatView = (function() {
                 
                 // Draw Group lines
                 groups = parseInt(groups);
-                if(groups === 0) groups = 3; // z-scores
+                if(groups === 0) { // z-scores
+                    svg.append("line")
+                        .attr("x1", xScale(-2))
+                        .attr("y1", margin.top)
+                        .attr("x2", xScale(-2))
+                        .attr("y2", svg_dy - margin.bottom)
+                        .style("stroke-width", 1)
+                        .style("stroke", "#F00")
+                        .style("fill", "none");
+
+                    svg.append("line")
+                        .attr("x1", xScale(2))
+                        .attr("y1", margin.top)
+                        .attr("x2", xScale(2))
+                        .attr("y2", svg_dy - margin.bottom)
+                        .style("stroke-width", 1)
+                        .style("stroke", "#F00")
+                        .style("fill", "none");
+                } 
                 if(groups !== 1) {
                     if (isFinite(maxXLow)) {
                         svg.append("line")
