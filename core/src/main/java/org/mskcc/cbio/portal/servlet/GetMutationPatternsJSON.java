@@ -242,13 +242,13 @@ public class GetMutationPatternsJSON extends HttpServlet {
                                     if((group == 0 || group == groups - 1) && resultMaps.get(otherGroup).containsKey(pattern.getKey())) {
                                         _scores.put("supportOther", (resultMaps.get(otherGroup).get(pattern.getKey()) - pattern.getValue()));
                                     } else {
-                                        _scores.put("supportOther", "-");
+                                        _scores.put("supportOther", "N/A");
                                     }
                                 } else {
                                     _scores.put("pattern", String.join(",", pattern.getKey()));
                                     _scores.put("magnitude", pattern.getKey().size());
                                     _scores.put("support", pattern.getValue());
-                                    _scores.put("supportOther", "-");
+                                    _scores.put("supportOther", "N/A");
                                 }
                                 arrayNode.add(_scores);                            
                             }

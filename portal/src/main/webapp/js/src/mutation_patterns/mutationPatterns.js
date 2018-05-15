@@ -391,7 +391,7 @@ var MutPatView = (function() {
                             "sType": 'mutpat-absolute-value',
                             "bSearchable": true,
                             "aTargets": [ 1 ],
-                            "sWidth": "22%"
+                            "sWidth": "16%"
                         },
                         {
                             "sType": 'mutpat-absolute-value',
@@ -418,10 +418,19 @@ var MutPatView = (function() {
                         $('td:eq(0)', nRow).css("font-weight", "bold");
                         $('td:eq(1)', nRow).css("font-weight", "bold");
                         $('td:eq(2)', nRow).css("font-weight", "bold");
+                        $('td:eq(3)', nRow).css("font-weight", "bold");
                         var colorScale = d3.scale.linear()
                             .domain([0.1, 0.33, 1])
                             .range(["#CC0000", "#CCCC00", "#00CC00"]);
                         $('td:eq(2)', nRow).css("color", colorScale(aData[2]));
+                        
+                        if (isNaN(aData[3])) {
+                            $('td:eq(3)', nRow).css("color", "#222222");
+                        } else if (aData[3] > 0) {
+                            $('td:eq(3)', nRow).css("color", "#3B7C3B");                            
+                        } else {
+                            $('td:eq(3)', nRow).css("color", "#B40404");
+                        }
                     },
                     "fnInfoCallback": function( oSettings, iStart, iEnd, iMax, iTotal, sPre ) {
                         if (iTotal === iMax) {
@@ -524,13 +533,15 @@ var MutPatView = (function() {
             //Overwrite some datatable function for custom filtering
             function overWriteFilters() {
                 jQuery.fn.dataTableExt.oSort['mutpat-absolute-value-desc'] = function(a,b) {
-                    if(isNaN(a) || isNaN(b)) return 0; 
+                    if(isNaN(a)) return -1;
+                    else if(isNaN(b)) return 1; 
                     else if (Math.abs(a) > Math.abs(b)) return -1;
                     else if (Math.abs(a) < Math.abs(b)) return 1;
                     else return 0;
                 };
                 jQuery.fn.dataTableExt.oSort['mutpat-absolute-value-asc'] = function(a,b) {
-                    if(isNaN(a) || isNaN(b)) return 0;
+                    if(isNaN(a)) return 1;
+                    else if(isNaN(b)) return -1;
                     else if (Math.abs(a) > Math.abs(b)) return 1;
                     else if (Math.abs(a) < Math.abs(b)) return -1;
                     else return 0;
