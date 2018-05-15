@@ -350,7 +350,7 @@ var MutPatView = (function() {
                 loadingImgId: "", //Id for ajax loading img
                 tableId: "", //Id for the co-expression table
                 tableDivId: "", //Id for the div of the co-expression table
-                plotsId: "" //Id for the plots on the right
+                plotId: "" //Id for the plots on the right
             },
             geneId = "", //Gene of this sub tab instance
             mutpatTableArr = [], //Data array for the datatable
