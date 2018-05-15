@@ -366,6 +366,7 @@ var MutPatView = (function() {
                     "<th>Pattern</th>" +
                     "<th>Magnitude</th>" +
                     "<th>Support</th>" +
+                    "<th>Support Diff</th>" +
                     "</tr>" +
                     "</thead><tbody></tbody>"
                 );
@@ -396,6 +397,12 @@ var MutPatView = (function() {
                             "sType": 'mutpat-absolute-value',
                             "bSearchable": false, 
                             "aTargets": [ 2 ],
+                            "sWidth": "22%"
+                        },
+                        {
+                            "sType": 'mutpat-absolute-value',
+                            "bSearchable": false, 
+                            "aTargets": [ 3 ],
                             "sWidth": "22%"
                         }
                     ],
@@ -517,12 +524,14 @@ var MutPatView = (function() {
             //Overwrite some datatable function for custom filtering
             function overWriteFilters() {
                 jQuery.fn.dataTableExt.oSort['mutpat-absolute-value-desc'] = function(a,b) {
-                    if (Math.abs(a) > Math.abs(b)) return -1;
+                    if(isNaN(a) || isNaN(b)) return 0; 
+                    else if (Math.abs(a) > Math.abs(b)) return -1;
                     else if (Math.abs(a) < Math.abs(b)) return 1;
                     else return 0;
                 };
                 jQuery.fn.dataTableExt.oSort['mutpat-absolute-value-asc'] = function(a,b) {
-                    if (Math.abs(a) > Math.abs(b)) return 1;
+                    if(isNaN(a) || isNaN(b)) return 0;
+                    else if (Math.abs(a) > Math.abs(b)) return 1;
                     else if (Math.abs(a) < Math.abs(b)) return -1;
                     else return 0;
                 };
@@ -546,6 +555,8 @@ var MutPatView = (function() {
                     tmp_arr.push(obj.pattern);
                     tmp_arr.push(obj.magnitude);
                     tmp_arr.push(obj.support.toFixed(3));
+                    if(isNaN(obj.supportOther)) tmp_arr.push(obj.supportOther);
+                    else tmp_arr.push(obj.supportOther.toFixed(3));
                     mutpatTableArr.push(tmp_arr);
                 });   
             }

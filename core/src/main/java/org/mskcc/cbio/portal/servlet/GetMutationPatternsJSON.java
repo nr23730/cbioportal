@@ -201,8 +201,10 @@ public class GetMutationPatternsJSON extends HttpServlet {
                 try {
                     if (getPatterns) {
                         Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getAlterationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold, mutation);
+                        Map<Integer, Map<Set<String>, Double>> resultMaps = new HashMap<>();
                         for (Map.Entry<Integer, Map<String,Set<String>>> mutationMap: map.entrySet()) {
-                            ArrayNode arrayNode = mapper.createArrayNode();
+//                            ArrayNode arrayNode = mapper.createArrayNode();
+                            resultMaps.put(mutationMap.getKey(), new HashMap<>());
                             List<List<String>> transactions = new ArrayList<>();
                             for (Map.Entry<String, Set<String>> entry: mutationMap.getValue().entrySet()) {
                                 transactions.add(new ArrayList<>(entry.getValue()));
@@ -213,11 +215,42 @@ public class GetMutationPatternsJSON extends HttpServlet {
                             FPGrowthModel<String> fpgModel = fpg.run(rdd);
 
                             for (FPGrowth.FreqItemset<String> itemset: fpgModel.freqItemsets().toJavaRDD().collect()) {
+                                resultMaps.get(mutationMap.getKey()).put(new HashSet<>(itemset.javaItems()), (double)itemset.freq()/(double)transactions.size());
+//                                ObjectNode _scores = mapper.createObjectNode();
+//                                _scores.put("pattern", String.join(",", itemset.javaItems()));
+//                                _scores.put("magnitude", itemset.javaItems().size());
+//                                _scores.put("support", (double)itemset.freq()/(double)transactions.size());
+//                                arrayNode.add(_scores);
+                            }
+//                            fullResultJson.add(arrayNode);
+                        }
+                        for (Map.Entry<Integer, Map<Set<String>, Double>> resultMap: resultMaps.entrySet()) {
+                            ArrayNode arrayNode = mapper.createArrayNode();
+                            int group = resultMap.getKey();
+                            int otherGroup = 0;
+                            if(groups == 0) {
+                                groups = 3;
+                            }
+                            if(group == 0) otherGroup = groups - 1;
+                            for (Map.Entry<Set<String>, Double> pattern: resultMap.getValue().entrySet()) {
                                 ObjectNode _scores = mapper.createObjectNode();
-                                _scores.put("pattern", String.join(",", itemset.javaItems()));
-                                _scores.put("magnitude", itemset.javaItems().size());
-                                _scores.put("support", (double)itemset.freq()/(double)transactions.size());
-                                arrayNode.add(_scores);
+                                if(groups != 1) {
+                                    double support = pattern.getValue();
+                                    _scores.put("pattern", String.join(",", pattern.getKey()));
+                                    _scores.put("magnitude", pattern.getKey().size());
+                                    _scores.put("support", support);
+                                    if((group == 0 || group == groups - 1) && resultMaps.get(otherGroup).containsKey(pattern.getKey())) {
+                                        _scores.put("supportOther", (resultMaps.get(otherGroup).get(pattern.getKey()) - pattern.getValue()));
+                                    } else {
+                                        _scores.put("supportOther", "-");
+                                    }
+                                } else {
+                                    _scores.put("pattern", String.join(",", pattern.getKey()));
+                                    _scores.put("magnitude", pattern.getKey().size());
+                                    _scores.put("support", pattern.getValue());
+                                    _scores.put("supportOther", "-");
+                                }
+                                arrayNode.add(_scores);                            
                             }
                             fullResultJson.add(arrayNode);
                         }
