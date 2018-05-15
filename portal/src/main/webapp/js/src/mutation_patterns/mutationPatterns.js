@@ -147,6 +147,10 @@ var MutPatView = (function() {
                     if (typeof(element) !== 'undefined' && element !== null) { 
                         element.parentNode.removeChild(element); //destroy all the existing instances
                     }
+                    element =  document.getElementById(Prefix.plotPrefix + cbio.util.safeProperty(value));
+                    if (typeof(element) !== 'undefined' && element !== null) {
+                        element.parentNode.removeChild(element); //destroy all the existing instances
+                    }
                     //Empty all the sub divs
                     $("#" + Prefix.tableDivPrefix + cbio.util.safeProperty(value)).empty();
                     $("#" + Prefix.plotPrefix + cbio.util.safeProperty(value)).empty();
@@ -214,6 +218,10 @@ var MutPatView = (function() {
                     if (typeof(element) !== 'undefined' && element !== null) { 
                         element.parentNode.removeChild(element); //destroy all the existing instances
                     }
+                    element =  document.getElementById(Prefix.plotPrefix + cbio.util.safeProperty(value));
+                    if (typeof(element) !== 'undefined' && element !== null) {
+                        element.parentNode.removeChild(element); //destroy all the existing instances
+                    }
                     //Empty all the sub divs
                     $("#" + Prefix.tableDivPrefix + cbio.util.safeProperty(value)).empty();
                     $("#" + Prefix.plotPrefix + cbio.util.safeProperty(value)).empty();
@@ -265,6 +273,10 @@ var MutPatView = (function() {
                     if (typeof(element) !== 'undefined' && element !== null) {
                         element.parentNode.removeChild(element); //destroy all the existing instances
                     }
+                    element =  document.getElementById(Prefix.plotPrefix + cbio.util.safeProperty(value));
+                    if (typeof(element) !== 'undefined' && element !== null) {
+                        element.parentNode.removeChild(element); //destroy all the existing instances
+                    }
                     //Empty all the sub divs
                     $("#" + Prefix.tableDivPrefix + cbio.util.safeProperty(value)).empty();
                     $("#" + Prefix.plotPrefix + cbio.util.safeProperty(value)).empty();
@@ -313,6 +325,10 @@ var MutPatView = (function() {
                 $.each(geneIds, function(index, value) {
                     //Destroy all the subview instances
                     var element =  document.getElementById(Prefix.tableDivPrefix + cbio.util.safeProperty(value));
+                    if (typeof(element) !== 'undefined' && element !== null) {
+                        element.parentNode.removeChild(element); //destroy all the existing instances
+                    }
+                    element =  document.getElementById(Prefix.plotPrefix + cbio.util.safeProperty(value));
                     if (typeof(element) !== 'undefined' && element !== null) {
                         element.parentNode.removeChild(element); //destroy all the existing instances
                     }
