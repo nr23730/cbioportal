@@ -505,10 +505,10 @@ var MutPatView = (function() {
                 var means = $('#'+Names.plotId).data('means');
                 if (position == "L") {
                     $("#" + Names.tableDivId + "L").find('.mean_exp_L').append(
-                        "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-L' style='width: 230px; margin-left: 5px;'>Mean Expression: " + means.xLow.toFixed(3) + "Mean Count: " + means.yLow.toFixed(0) + "</label>");
+                        "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-L' style='width: 230px; margin-left: 5px; margin-top: 5px;'>Mean Expression: " + means.xLow.toFixed(3) + "<br>Mean Count: " + means.yLow.toFixed(0) + "</label>");
                 } else if(position == "R" && parseInt(groups) !== 1) {
                     $("#" + Names.tableDivId + "R").find('.mean_exp_R').append(
-                        "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-R' style='width: 230px; margin-left: 5px;'>Mean Expression: " + means.xHigh.toFixed(3) + "Mean Count: " + means.yHigh.toFixed(0) + "</label>");
+                        "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-R' style='width: 230px; margin-left: 5px; margin-top: 5px;'>Mean Expression: " + means.xHigh.toFixed(3) + "<br>Mean Count: " + means.yHigh.toFixed(0) + "</label>");
                 }
             }
 
