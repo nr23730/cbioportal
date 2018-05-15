@@ -814,7 +814,7 @@ var MutPatView = (function() {
                     .append("text")
                     .attr("class", "label")
                     .attr("transform", "rotate(-90)")
-                    .attr("y", -40)
+                    .attr("y", -50)
                     .attr("x", -(chart_dy / 2.0))
                     .attr("dy", ".71em")
                     .style("text-anchor", "end")
