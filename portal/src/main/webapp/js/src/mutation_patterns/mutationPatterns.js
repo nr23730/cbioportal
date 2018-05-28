@@ -526,7 +526,7 @@ var MutPatView = (function() {
                                 if(hasPattern) {
                                     dot.style("fill", "#F00");
                                 } else {
-                                    dot.style("fill", "#000");
+                                    dot.style("fill", "#BBB");
                                 }
                             }
                         );
