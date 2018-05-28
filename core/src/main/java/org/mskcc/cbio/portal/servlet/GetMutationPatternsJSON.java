@@ -240,7 +240,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
                                     _scores.put("magnitude", pattern.getKey().size());
                                     _scores.put("support", support);
                                     if((group == 0 || group == groups - 1) && resultMaps.get(otherGroup).containsKey(pattern.getKey())) {
-                                        _scores.put("supportOther", (resultMaps.get(otherGroup).get(pattern.getKey()) - pattern.getValue()));
+                                        _scores.put("supportOther", (pattern.getValue() - resultMaps.get(otherGroup).get(pattern.getKey())));
                                     } else {
                                         _scores.put("supportOther", "N/A");
                                     }
