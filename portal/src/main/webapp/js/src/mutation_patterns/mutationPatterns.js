@@ -61,8 +61,10 @@ var MutPatView = (function() {
     //Containers    
     var profileList = []; //Profile Lists for all queried genes
     var alterationProfileList = []; //Profile Lists for all queried genes
-    var groupsList = [ {"ID":10, "NAME":"10"}, {"ID":5, "NAME":"5"}, {"ID":2, "NAME":"2"}, {"ID":1, "NAME":"1"}, {"ID":0, "NAME":"Use Z-Scores"}]; //Groups Lists for all queried genes
+    var groupsListZscores = [ {"ID":10, "NAME":"10"}, {"ID":5, "NAME":"5"}, {"ID":2, "NAME":"2"}, {"ID":1, "NAME":"1"}, {"ID":0, "NAME":"Use Z-Scores"}]; //Groups Lists for all queried genes
+    var groupsList = [ {"ID":10, "NAME":"10"}, {"ID":5, "NAME":"5"}, {"ID":2, "NAME":"2"}, {"ID":1, "NAME":"1"}]; //Groups Lists for all queried genes
     var supportList = [{"ID":0.1, "NAME":"0.1"}, {"ID":0.25, "NAME":"0.25"}, {"ID":0.33, "NAME":"0.33"}, {"ID":0.5, "NAME":"0.5"}, {"ID":0.75, "NAME":"0.75"}]; 
+    var supportListCNA = [{"ID":0.4, "NAME":"0.4"}, {"ID":0.5, "NAME":"0.5"}, {"ID":0.66, "NAME":"0.66"}, {"ID":0.75, "NAME":"0.75"}, {"ID":0.85, "NAME":"0.85"}]; 
 
     //Sub tabs
     var Tabs = (function() {
@@ -140,6 +142,9 @@ var MutPatView = (function() {
 
         function bindListener() {
             $("#mutpat-profile-selector").change(function() {
+                // if(($("#mutpat-profile-selector :selected").val()).toString().toLowerCase().indexOf("z-scores") !== -1) {
+                //    
+                // }
                 var geneIds = window.QuerySession.getQueryGenes();
                 $.each(geneIds, function(index, value) {
                     //Distroy all the subview instances
@@ -199,7 +204,7 @@ var MutPatView = (function() {
 
         function drawProfileSelector() {
             $("#mutpat-alteration-profile-selector-dropdown").append(
-                "Data Set " + 
+                "Alteration Set " + 
                 "<select id='mutpat-alteration-profile-selector'></select>");
             $.each(alterationProfileList, function(index, value) {
                 $("#mutpat-alteration-profile-selector").append(
@@ -964,15 +969,15 @@ var MutPatView = (function() {
             $("#" + Names.divId).append(
                 "<table>" +
                 "<tr>" +
+                "<td width='" + dim.mutpat_plots_width + "' valign='top'>" +
+                "<div id='" + Names.plotId + "' style='margin-top: 20px'> " +
+                "</div></td>" +
+                "</tr>" +
+                "<tr>" +
                 "<td width='" + dim.mutpat_tables_width + "' valign='top'>" + 
                 "<div id='" + Names.tableDivId + "'> " +
                 "<div id='" + tableDivIdL + "' style='display: inline-block; float: left; width: " + dim.mutpat_table_width + ";' ></div>" +
                 "<div id='" + tableDivIdR + "' style='display: inline-block; float: right; width: " + dim.mutpat_table_width + ";' ></div>" +
-                "</div></td>" +
-                "</tr>" +
-                "<tr>" +
-                "<td width='" + dim.mutpat_plots_width + "' valign='top'>" +
-                "<div id='" + Names.plotId + "' style='margin-top: 20px'> " +
                 "</div></td>" +
                 "</tr>" +
                 "</table>");
