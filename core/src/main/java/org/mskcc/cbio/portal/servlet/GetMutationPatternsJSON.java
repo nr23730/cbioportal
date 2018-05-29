@@ -265,7 +265,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
                                 _scores.put("Group", i);
                                 _scores.put("SampleId", entry.getKey());
                                 _scores.put("Expression", expressionMap.get(entry.getKey()));
-                                _scores.put("Alterations", String.join(", ", entry.getValue()));
+                                _scores.put("Alterations", String.join(",", entry.getValue()));
                                 if(_scores.get("Expression") != null) fullResultJson.add(_scores);
                             }
                         }

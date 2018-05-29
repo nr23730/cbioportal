@@ -738,7 +738,7 @@ var MutPatView = (function() {
                 if (groups === 0) groups = 3;
                 
                 $.each(_result, function(i, obj) {
-                    var alterationArr = obj.Alterations.replace(/\s+/, "").split(",");
+                    var alterationArr = obj.Alterations.split(",");
                     var expression = parseFloat(obj.Expression);
                     if(!isNaN(expression)) {
                         var altCount = alterationArr.length;
