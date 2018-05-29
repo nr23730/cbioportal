@@ -236,7 +236,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
                                 ObjectNode _scores = mapper.createObjectNode();
                                 if(groups != 1) {
                                     double support = pattern.getValue();
-                                    _scores.put("pattern", String.join(",", pattern.getKey()));
+                                    _scores.put("pattern", String.join(", ", pattern.getKey()));
                                     _scores.put("magnitude", pattern.getKey().size());
                                     _scores.put("support", support);
                                     if((group == 0 || group == groups - 1) && resultMaps.get(otherGroup).containsKey(pattern.getKey())) {
@@ -245,7 +245,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
                                         _scores.put("supportOther", "N/A");
                                     }
                                 } else {
-                                    _scores.put("pattern", String.join(",", pattern.getKey()));
+                                    _scores.put("pattern", String.join(", ", pattern.getKey()));
                                     _scores.put("magnitude", pattern.getKey().size());
                                     _scores.put("support", pattern.getValue());
                                     _scores.put("supportOther", "N/A");
@@ -265,7 +265,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
                                 _scores.put("Group", i);
                                 _scores.put("SampleId", entry.getKey());
                                 _scores.put("Expression", expressionMap.get(entry.getKey()));
-                                _scores.put("Alterations", String.join(",", entry.getValue()));
+                                _scores.put("Alterations", String.join(", ", entry.getValue()));
                                 if(_scores.get("Expression") != null) fullResultJson.add(_scores);
                             }
                         }

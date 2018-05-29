@@ -513,7 +513,7 @@ var MutPatView = (function() {
                     //Get the gene name of the selected row
                     var aData = mutPatTableInstance[position].fnGetData(this);
                     if (null !== aData) {
-                        var pattern = aData[0].split(",");
+                        var pattern = aData[0].trim().split(",");
                         d3.select("#" + Names.plotId).selectAll('circle').each(
                             function(d) {
                                 var hasPattern = true;
@@ -738,7 +738,7 @@ var MutPatView = (function() {
                 if (groups === 0) groups = 3;
                 
                 $.each(_result, function(i, obj) {
-                    var alterationArr = obj.Alterations.split(",");
+                    var alterationArr = obj.Alterations.trim().split(",");
                     var expression = parseFloat(obj.Expression);
                     if(!isNaN(expression)) {
                         var altCount = alterationArr.length;
