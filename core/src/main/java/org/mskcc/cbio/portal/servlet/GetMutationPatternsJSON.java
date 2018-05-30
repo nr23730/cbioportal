@@ -207,9 +207,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
                         }
                         for (Map.Entry<Integer, Map<String,Set<String>>> mutationMap: map.entrySet()) {
                             resultMaps.put(mutationMap.getKey(), new HashMap<>());
-                            if(mutationMap.getKey() != 0 && mutationMap.getKey() != groups - 1) {
-                                continue;
-                            }
+
                             List<List<String>> transactions = new ArrayList<>();
                             for (Map.Entry<String, Set<String>> entry: mutationMap.getValue().entrySet()) {
                                 transactions.add(new ArrayList<>(entry.getValue()));
