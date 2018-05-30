@@ -207,11 +207,7 @@ public class MutPatUtil {
                 groupsMap.put(i, sampleIdsInGroup);
             }
             for (int i = 0; i < groups; i++) {
-                if(i == 0 || i == groups - 1) {
-                    resultMap.put(i, getAlterationMap(profileId, groupsMap.get(i), i, mutation));
-                } else {
-                    resultMap.put(i, new HashMap<>());
-                }
+                resultMap.put(i, getAlterationMap(profileId, groupsMap.get(i), i, mutation));
             }
         }
         return resultMap;
