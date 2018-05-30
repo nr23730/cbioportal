@@ -191,7 +191,7 @@ public class MutPatUtil {
         } else {
             List<String> orderedSampleIds = new ArrayList<>(expressionMap.values());
             int itemsPerGroup = expressionMap.size();
-            if (groups >= 1 && expressionMap.size() > groups) {
+            if (expressionMap.size() > groups) {
                 itemsPerGroup = expressionMap.size() / groups;
             }
             for (int i = 0; i < groups; i++) {
@@ -207,7 +207,11 @@ public class MutPatUtil {
                 groupsMap.put(i, sampleIdsInGroup);
             }
             for (int i = 0; i < groups; i++) {
-                resultMap.put(i, getAlterationMap(profileId, groupsMap.get(i), i, mutation));
+                if(i == 0 || i == groups - 1) {
+                    resultMap.put(i, getAlterationMap(profileId, groupsMap.get(i), i, mutation));
+                } else {
+                    resultMap.put(i, new HashMap<>());
+                }
             }
         }
         return resultMap;
