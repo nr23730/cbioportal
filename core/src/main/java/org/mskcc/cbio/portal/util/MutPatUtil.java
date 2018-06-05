@@ -200,7 +200,7 @@ public class MutPatUtil {
                 Set<String> sampleIdsInGroup = new HashSet<>();
                 // Equal group partitioning
                 int start = lastStart;
-                int end = (i+1) * itemsPerGroup;
+                int end = start + (itemsPerGroup+1);
                 if(remainder > 0) {
                     end++;
                     remainder--;
