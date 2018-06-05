@@ -433,7 +433,8 @@ var MutPatView = (function() {
                         "bScrollCollapse": true,
                         //iDisplayLength: mutpat_table_arr.length,
                         "oLanguage": {
-                            "sSearch": "Search Gene"
+                            "sSearch": "Search Gene",
+                            "sEmptyTable": "No Patterns found"
                         },
                         "bDeferRender": true,
                         "iDisplayLength": 30,
@@ -642,19 +643,40 @@ var MutPatView = (function() {
                         is_download: "false",
                         get_patterns: "true"
                     };
-                    $.post(
-                        "getMutPat.do",
-                        paramsGetMutPatData,
-                        function (result) {
-                            var groups =  $("#mutpat-groups-selector :selected").val();
-                            var mutPatTableLeft = new MutPatTable("L");
-                            mutPatTableLeft.init(result, groups);
-                            var mutPatTableRight = new MutPatTable("R");
-                            mutPatTableRight.init(result, groups);
-                            // getMutPatDataCallBack(result, parseInt(paramsGetMutPatData.groups));
-                        },
-                        "json"
-                    );
+                    
+                    
+                    // Checking Params 
+                    var msg = "";
+                    
+                    var sampleCount = window.QuerySession.getSampleIds().length;
+                    var groups = parseInt(paramsGetMutPatData.groups);
+                    var samplesPerGroup = Math.floor(sampleCount/groups);
+                    
+                    var minSupport = parseFloat(paramsGetMutPatData.support);
+                    
+                    if(samplesPerGroup < 10 && minSupport < 0.5) {
+                        msg = "Please choose a higher minimum support with small group size of approximately " + samplesPerGroup + " per group.";
+                    }
+                    if(!paramsGetMutPatData.alteration_profile_id.includes("mutation") && minSupport < 0.5) {
+                        msg = "Please choose a higher minimum support if you are not using mutations for pattern search.";
+                    }
+                    
+                    if(msg !== "") {
+                        $("#" + Names.tableDivId).append(msg);
+                    } else {
+                        $.post(
+                            "getMutPat.do",
+                            paramsGetMutPatData,
+                            function (result) {
+                                var groups =  paramsGetMutPatData.groups;
+                                var mutPatTableLeft = new MutPatTable("L");
+                                mutPatTableLeft.init(result, groups);
+                                var mutPatTableRight = new MutPatTable("R");
+                                mutPatTableRight.init(result, groups);
+                            },
+                            "json"
+                        );
+                    }
                 }
             };
             
