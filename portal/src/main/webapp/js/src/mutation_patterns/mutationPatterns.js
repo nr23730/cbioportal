@@ -63,7 +63,7 @@ var MutPatView = (function() {
     var alterationProfileList = []; //Profile Lists for all queried genes
     var groupsListZscores = [ {"ID":10, "NAME":"10"}, {"ID":5, "NAME":"5"}, {"ID":2, "NAME":"2"}, {"ID":1, "NAME":"1"}, {"ID":0, "NAME":"Use Z-Scores"}]; //Groups Lists for all queried genes
     var groupsList = [ {"ID":10, "NAME":"10"}, {"ID":5, "NAME":"5"}, {"ID":2, "NAME":"2"}, {"ID":1, "NAME":"1"}]; //Groups Lists for all queried genes
-    var supportList = [{"ID":0.6, "NAME":"0.6"}, {"ID":0.5, "NAME":"0.5"}, {"ID":0.4, "NAME":"0.4"}, {"ID":0.33, "NAME":"0.33"}, {"ID":0.25, "NAME":"0.25"}, {"ID":0.2, "NAME":"0.2"}, {"ID":0.15, "NAME":"0.1"}, {"ID":0.1, "NAME":"0.1"}]; 
+    var supportList = [{"ID":0.6, "NAME":"0.6"}, {"ID":0.5, "NAME":"0.5"}, {"ID":0.4, "NAME":"0.4"}, {"ID":0.33, "NAME":"0.33"}, {"ID":0.25, "NAME":"0.25"}, {"ID":0.2, "NAME":"0.2"}, {"ID":0.15, "NAME":"0.15"}, {"ID":0.1, "NAME":"0.1"}]; 
     // var supportList = [{"ID":0.75, "NAME":"0.75"}, {"ID":0.66, "NAME":"0.66"}, {"ID":0.6, "NAME":"0.6"}, {"ID":0.5, "NAME":"0.5"}, {"ID":0.4, "NAME":"0.4"}, {"ID":0.33, "NAME":"0.33"}, {"ID":0.25, "NAME":"0.25"}, {"ID":0.2, "NAME":"0.2"}, {"ID":0.15, "NAME":"0.1"}, {"ID":0.1, "NAME":"0.1"}]; 
     var supportListCNA = [{"ID":0.4, "NAME":"0.4"}, {"ID":0.5, "NAME":"0.5"}, {"ID":0.66, "NAME":"0.66"}, {"ID":0.75, "NAME":"0.75"}, {"ID":0.85, "NAME":"0.85"}]; 
 
@@ -655,10 +655,10 @@ var MutPatView = (function() {
                     var minSupport = parseFloat(paramsGetMutPatData.support);
                     
                     if(samplesPerGroup < 10 && minSupport < 0.5) {
-                        msg = "Please choose a higher minimum support with small group size of approximately " + samplesPerGroup + " per group.";
+                        msg = "Please choose a minimum support of 0.5 or higher with small group size of approximately " + samplesPerGroup + " per group.";
                     }
-                    if(!paramsGetMutPatData.alteration_profile_id.includes("mutation") && minSupport < 0.5) {
-                        msg = "Please choose a higher minimum support if you are not using mutations for pattern search.";
+                    if(!paramsGetMutPatData.alteration_profile_id.includes("mutation") && minSupport < 0.33) {
+                        msg = "Please choose a minimum support of 0.33 or higher if you are not using mutations for pattern search.";
                     }
                     
                     if(msg !== "") {
