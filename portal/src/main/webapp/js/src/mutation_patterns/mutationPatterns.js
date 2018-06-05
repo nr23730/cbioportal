@@ -607,7 +607,7 @@ var MutPatView = (function() {
                             $("#" + Names.tableDivId + position).append("There are no alteration patterns with an support of " + sup + " or higher.");
                             attachDownloadFullResultButton();
                         } else if (position === "R" && groups === 1) {
-                            $("#" + Names.tableDivId + position).append("There is only one group to display.");
+                            // $("#" + Names.tableDivId + position).append("There is only one group to display.");
                         } else {
                             //Render datatable
                             convertData(result, groups);
@@ -662,6 +662,7 @@ var MutPatView = (function() {
                     }
                     
                     if(msg !== "") {
+                        $("#" + Names.loadingImgId).empty();
                         $("#" + Names.tableDivId).append(msg);
                     } else {
                         $.post(
