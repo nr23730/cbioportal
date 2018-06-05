@@ -192,13 +192,14 @@ public class MutPatUtil {
             List<String> orderedSampleIds = new ArrayList<>(expressionMap.values());
             int itemsPerGroup = expressionMap.size();
             if (expressionMap.size() > groups) {
-                itemsPerGroup = expressionMap.size() / groups;
+                itemsPerGroup = (expressionMap.size() / groups);
             }
-            int remainder = expressionMap.size() % itemsPerGroup;
+            int remainder = expressionMap.size() % groups;
+            int lastStart = 0;
             for (int i = 0; i < groups; i++) {
                 Set<String> sampleIdsInGroup = new HashSet<>();
                 // Equal group partitioning
-                int start = i*itemsPerGroup;
+                int start = lastStart;
                 int end = (i+1) * itemsPerGroup;
                 if(remainder > 0) {
                     end++;
@@ -207,7 +208,7 @@ public class MutPatUtil {
                 if (i == groups-1) {
                     end = expressionMap.size();
                 }
-
+                lastStart = end;
                 for(int j = start; j < end; j++) {
                     sampleIdsInGroup.add(orderedSampleIds.get(j));
                 }

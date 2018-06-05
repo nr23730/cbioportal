@@ -207,7 +207,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
                         }
                         for (Map.Entry<Integer, Map<String,Set<String>>> mutationMap: map.entrySet()) {
                             resultMaps.put(mutationMap.getKey(), new HashMap<>());
-                            if(mutationMap.getKey() != 0 || mutationMap.getKey() != (groups-1)) {
+                            if(mutationMap.getKey() != 0 && mutationMap.getKey() != (groups-1)) {
                                 continue;
                                 // Increase Performance
                                 // right now only the first and last group get used as a result so we don't have to calculate all other groups
