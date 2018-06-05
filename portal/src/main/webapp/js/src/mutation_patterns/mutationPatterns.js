@@ -377,275 +377,287 @@ var MutPatView = (function() {
             mutpatTableArr = [], //Data array for the datatable
             mutPatTableInstance = {};
 
-        var MutPatTable = function(position) {
+        var MutPatTables = function () {
+            var MutPatTable = function (position) {
 
-            function configTable(position) {
-                //Draw out the markdown of the datatable
-                $("#" + Names.tableId + position).append(
-                    "<thead style='font-size:70%;' >" +
-                    "<tr>" + 
-                    "<th>Pattern</th>" +
-                    "<th>Magnitude</th>" +
-                    "<th>Support</th>" +
-                    "<th>Support Diff</th>" +
-                    "</tr>" +
-                    "</thead><tbody></tbody>"
-                );
+                function configTable(position) {
+                    //Draw out the markdown of the datatable
+                    $("#" + Names.tableId + position).append(
+                        "<thead style='font-size:70%;' >" +
+                        "<tr>" +
+                        "<th>Pattern</th>" +
+                        "<th>Magnitude</th>" +
+                        "<th>Support</th>" +
+                        "<th>Support Diff</th>" +
+                        "</tr>" +
+                        "</thead><tbody></tbody>"
+                    );
 
-                //Configure the datatable with  jquery
-                mutPatTableInstance[position] = $("#" + Names.tableId + position).dataTable({
-                    "sDom": '<"H"f<"mutpat-table-filter-magnitude_' + position + '"><"mean_exp_' + position + '">>t<"F"i<"datatable-paging"p>>',
-                    "bPaginate": true,
-                    "sPaginationType": "two_button",
-                    "bInfo": true,
-                    "bJQueryUI": true,
-                    "bAutoWidth": false,
-                    "aaData" : mutpatTableArr,
-                    "aaSorting": [[1, 'desc']],
-                    "aoColumnDefs": [
-                        {
-                            "bSearchable": true,
-                            "aTargets": [ 0 ],
-                            "sWidth": "56%"
-                        },
-                        {
-                            "sType": 'mutpat-absolute-value',
-                            "bSearchable": true,
-                            "aTargets": [ 1 ],
-                            "sWidth": "16%"
-                        },
-                        {
-                            "sType": 'mutpat-absolute-value',
-                            "bSearchable": false, 
-                            "aTargets": [ 2 ],
-                            "sWidth": "22%"
-                        },
-                        {
-                            "sType": 'mutpat-absolute-value',
-                            "bSearchable": false, 
-                            "aTargets": [ 3 ],
-                            "sWidth": "22%"
-                        }
-                    ],
-                    "sScrollY": "600px",
-                    "bScrollCollapse": true,
-                    //iDisplayLength: mutpat_table_arr.length,
-                    "oLanguage": {
-                        "sSearch": "Search Gene"
-                    },
-                    "bDeferRender": true,
-                    "iDisplayLength": 30,
-                    "fnRowCallback": function(nRow, aData) {
-                        $('td:eq(0)', nRow).css("font-weight", "bold");
-                        $('td:eq(1)', nRow).css("font-weight", "bold");
-                        $('td:eq(2)', nRow).css("font-weight", "bold");
-                        $('td:eq(3)', nRow).css("font-weight", "bold");
-                        var colorScale = d3.scale.linear()
-                            .domain([0.1, 0.33, 1])
-                            .range(["#CC0000", "#CCCC00", "#00CC00"]);
-                        $('td:eq(2)', nRow).css("color", colorScale(aData[2]));
-                        
-                        if (isNaN(aData[3])) {
-                            $('td:eq(3)', nRow).css("color", "#222222");
-                        } else if (aData[3] > 0) {
-                            $('td:eq(3)', nRow).css("color", "#3B7C3B");                            
-                        } else {
-                            $('td:eq(3)', nRow).css("color", "#B40404");
-                        }
-                    },
-                    "fnInfoCallback": function( oSettings, iStart, iEnd, iMax, iTotal, sPre ) {
-                        if (iTotal === iMax) {
-                            return iStart +" to "+ iEnd + " of " + iTotal;
-                        } else {
-                            return iStart + " to " + iEnd + " of " + iTotal + " (filtered from " + iMax + " total)";
-                        }
-                    }
-                });  
-            }
-
-            function attachDownloadFullResultButton() {
-                //Append download full result button at the bottom of the table
-                var downloadFullResultForm = "<form style='float:right;' action='getMutPat.do' method='post'>" +
-                    "<input type='hidden' name='cancer_study_id' value='" + window.QuerySession.getCancerStudyIds()[0] + "'>" +
-                    "<input type='hidden' name='gene' value='" + geneId + "'>" +
-                    "<input type='hidden' name='profile_id' value='" + $("#mutpat-profile-selector :selected").val() + "'>" + 
-                    "<input type='hidden' name='alteration_profile_id' value='" + $("#mutpat-alteration-profile-selector :selected").val() + "'>" + 
-                    "<input type='hidden' name='groups' value='" + $("#mutpat-groups-selector :selected").val() + "'>" + 
-                    "<input type='hidden' name='support' value='" + $("#mutpat-support-selector :selected").val() + "'>" + 
-                    "<input type='hidden' name='zscore_threshold' value='" + window.QuerySession.getZScoreThreshold() + "'>" +
-                    "<input type='hidden' name='case_set_id' value='" + window.QuerySession.getCaseSetId() + "'>" +
-                    "<input type='hidden' name='case_ids_key' value='" + window.QuerySession.getCaseIdsKey() + "'>" +
-                    "<input type='hidden' name='is_download' value='true'>" +
-                    "<input type='hidden' name='get_patterns' value='false'>" +
-                    "<input type='submit' value='Download Full Results'></form>";
-                $("#" + Names.tableDivId).append(downloadFullResultForm);            
-            }
-
-            function attachMagnitudeFilter(position) { 
-                //Add drop down filter for single/all pattern display
-                $("#" + Names.tableDivId + position).find('.mutpat-table-filter-magnitude_' + position).append(
-                    "<select id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-" + position + "' style='width: 230px; margin-left: 5px;'>" +
-                    "<option value='all'>Show All</option>" +
-                    "<option value='singleMagnitude'>Show Only Single Genes</option>" +
-                    "<option value='multipleMagnitude'>Show Only Gene Patterns</option>" +
-                    "</select>");
-                $("select#mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-" + position).change(function () {
-                    if ($(this).val() === "singleMagnitude") {
-                        mutPatTableInstance[position].fnFilter("1", 1, false, false);
-                    } else if ($(this).val() === "multipleMagnitude") {
-                        mutPatTableInstance[position].fnFilter('^(?!1$).*$', 1, true, false);
-                    } else if ($(this).val() === "all") {
-                        mutPatTableInstance[position].fnFilter("", 1);
-                    }
-                });
-            }
-            
-
-            function attachRowListener(position) {
-                $("#" + Names.tableId + position + " tbody tr").live('click', function (event) {
-                    //Highlight selected row
-                    $.each(mutPatTableInstance, function(i, instance) {
-                        $(instance.fnSettings().aoData).each(function (){
-                            $(this.nTr).removeClass('row_selected');
-                        });
-                    });
-                    $(event.target.parentNode).addClass('row_selected');
-                    //Get the gene name of the selected row
-                    var aData = mutPatTableInstance[position].fnGetData(this);
-                    if (null !== aData) {
-                        var pattern = aData[0].replace(/\s+/, "").split(",");
-                        d3.select("#" + Names.plotId).selectAll('circle').each(
-                            function(d) {
-                                var hasPattern = true;
-                                var dot = d3.select(this);
-                                $.each(pattern, function(i, obj) {
-                                    if(d.mutations.indexOf(obj.toString()) < 0)  {
-                                        hasPattern = false;
-                                    }
-                                });
-                                if(hasPattern) {
-                                    dot.style("fill", "#F00");
-                                } else {
-                                    dot.style("fill", "#BBB");
-                                }
+                    //Configure the datatable with  jquery
+                    mutPatTableInstance[position] = $("#" + Names.tableId + position).dataTable({
+                        "sDom": '<"H"f<"mutpat-table-filter-magnitude_' + position + '"><"mean_exp_' + position + '">>t<"F"i<"datatable-paging"p>>',
+                        "bPaginate": true,
+                        "sPaginationType": "two_button",
+                        "bInfo": true,
+                        "bJQueryUI": true,
+                        "bAutoWidth": false,
+                        "aaData": mutpatTableArr,
+                        "aaSorting": [[1, 'desc']],
+                        "aoColumnDefs": [
+                            {
+                                "bSearchable": true,
+                                "aTargets": [0],
+                                "sWidth": "56%"
+                            },
+                            {
+                                "sType": 'mutpat-absolute-value',
+                                "bSearchable": true,
+                                "aTargets": [1],
+                                "sWidth": "16%"
+                            },
+                            {
+                                "sType": 'mutpat-absolute-value',
+                                "bSearchable": false,
+                                "aTargets": [2],
+                                "sWidth": "22%"
+                            },
+                            {
+                                "sType": 'mutpat-absolute-value',
+                                "bSearchable": false,
+                                "aTargets": [3],
+                                "sWidth": "22%"
                             }
-                        );
-                    }
-                });
-            }
+                        ],
+                        "sScrollY": "600px",
+                        "bScrollCollapse": true,
+                        //iDisplayLength: mutpat_table_arr.length,
+                        "oLanguage": {
+                            "sSearch": "Search Gene"
+                        },
+                        "bDeferRender": true,
+                        "iDisplayLength": 30,
+                        "fnRowCallback": function (nRow, aData) {
+                            $('td:eq(0)', nRow).css("font-weight", "bold");
+                            $('td:eq(1)', nRow).css("font-weight", "bold");
+                            $('td:eq(2)', nRow).css("font-weight", "bold");
+                            $('td:eq(3)', nRow).css("font-weight", "bold");
+                            var colorScale = d3.scale.linear()
+                                .domain([0.1, 0.33, 1])
+                                .range(["#CC0000", "#CCCC00", "#00CC00"]);
+                            $('td:eq(2)', nRow).css("color", colorScale(aData[2]));
 
-            function initTable(position) {
-                //Init with selecting the first row
-                // $('#' + Names.tableId + position + ' tbody tr:eq(0)').click();
-                // $('#' + Names.tableId + position + ' tbody tr:eq(0)').addClass("row_selected");
-            }
-
-            function attachMeanExpression(position, groups) {
-                var means = $('#'+Names.plotId).data('means');
-                if (position == "L") {
-                    $("#" + Names.tableDivId + "L").find('.mean_exp_L').append(
-                        "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-L' style='width: 230px; margin-left: 5px; margin-top: 5px;'>Mean Expression: " + means.xLow.toFixed(3) + "<br>Mean Count: " + means.yLow.toFixed(0) + "</label>");
-                } else if(position == "R" && parseInt(groups) !== 1) {
-                    $("#" + Names.tableDivId + "R").find('.mean_exp_R').append(
-                        "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-R' style='width: 230px; margin-left: 5px; margin-top: 5px;'>Mean Expression: " + means.xHigh.toFixed(3) + "<br>Mean Count: " + means.yHigh.toFixed(0) + "</label>");
+                            if (isNaN(aData[3])) {
+                                $('td:eq(3)', nRow).css("color", "#222222");
+                            } else if (aData[3] > 0) {
+                                $('td:eq(3)', nRow).css("color", "#3B7C3B");
+                            } else {
+                                $('td:eq(3)', nRow).css("color", "#B40404");
+                            }
+                        },
+                        "fnInfoCallback": function (oSettings, iStart, iEnd, iMax, iTotal, sPre) {
+                            if (iTotal === iMax) {
+                                return iStart + " to " + iEnd + " of " + iTotal;
+                            } else {
+                                return iStart + " to " + iEnd + " of " + iTotal + " (filtered from " + iMax + " total)";
+                            }
+                        }
+                    });
                 }
-            }
 
-            //Overwrite some datatable function for custom filtering
-            function overWriteFilters() {
-                jQuery.fn.dataTableExt.oSort['mutpat-absolute-value-desc'] = function(a,b) {
-                    if(isNaN(a)) return -1;
-                    else if(isNaN(b)) return 1; 
-                    else if (Math.abs(a) > Math.abs(b)) return -1;
-                    else if (Math.abs(a) < Math.abs(b)) return 1;
-                    else return 0;
-                };
-                jQuery.fn.dataTableExt.oSort['mutpat-absolute-value-asc'] = function(a,b) {
-                    if(isNaN(a)) return 1;
-                    else if(isNaN(b)) return -1;
-                    else if (Math.abs(a) > Math.abs(b)) return 1;
-                    else if (Math.abs(a) < Math.abs(b)) return -1;
-                    else return 0;
-                };
-            }  
-
-            function convertData(_result, _groups) {
-                // Get ID for table
-                var id = 0;
-                if (position === "R") {
-                    if (_groups === 0) {
-                        id = 2;
-                    } else {
-                        id = _groups-1;
-                    }                   
-                } 
-                
-                //Convert the format of the callback result to fit datatable
-                mutpatTableArr = [];
-                $.each(_result[id], function(i, obj) {
-                    var tmp_arr = [];
-                    tmp_arr.push(obj.pattern);
-                    tmp_arr.push(obj.magnitude);
-                    tmp_arr.push(obj.support.toFixed(3));
-                    if(isNaN(obj.supportOther)) tmp_arr.push(obj.supportOther);
-                    else tmp_arr.push(obj.supportOther.toFixed(3));
-                    mutpatTableArr.push(tmp_arr);
-                });   
-            }
-
-            function getMutPatDataCallBack(result, groups) {
-                //Hide the loading img
-                $("#" + Names.loadingImgId).empty();
-                if (result.length === 0) {
-                    var sup = $("#mutpat-support-selector :selected").val();
-                    $("#" + Names.tableDivId + position).append("There are no alteration patterns with an support of " + sup + " or higher.");
-                    attachDownloadFullResultButton();                    
-                } else if (position === "R" && groups === 1) {
-                    $("#" + Names.tableDivId + position).append("There is only one group to display.");
-                } else {
-                    //Render datatable
-                    convertData(result, groups);
-                    overWriteFilters(); 
-                    configTable(position);
-                    if ( position === "L" ) {
-                        attachDownloadFullResultButton();
-                    }
-                    attachMagnitudeFilter(position);
-                    attachRowListener(position);
-                    attachMeanExpression(position, groups);
-                    initTable();                    
+                function attachDownloadFullResultButton() {
+                    //Append download full result button at the bottom of the table
+                    var downloadFullResultForm = "<form style='float:right;' action='getMutPat.do' method='post'>" +
+                        "<input type='hidden' name='cancer_study_id' value='" + window.QuerySession.getCancerStudyIds()[0] + "'>" +
+                        "<input type='hidden' name='gene' value='" + geneId + "'>" +
+                        "<input type='hidden' name='profile_id' value='" + $("#mutpat-profile-selector :selected").val() + "'>" +
+                        "<input type='hidden' name='alteration_profile_id' value='" + $("#mutpat-alteration-profile-selector :selected").val() + "'>" +
+                        "<input type='hidden' name='groups' value='" + $("#mutpat-groups-selector :selected").val() + "'>" +
+                        "<input type='hidden' name='support' value='" + $("#mutpat-support-selector :selected").val() + "'>" +
+                        "<input type='hidden' name='zscore_threshold' value='" + window.QuerySession.getZScoreThreshold() + "'>" +
+                        "<input type='hidden' name='case_set_id' value='" + window.QuerySession.getCaseSetId() + "'>" +
+                        "<input type='hidden' name='case_ids_key' value='" + window.QuerySession.getCaseIdsKey() + "'>" +
+                        "<input type='hidden' name='is_download' value='true'>" +
+                        "<input type='hidden' name='get_patterns' value='false'>" +
+                        "<input type='submit' value='Download Full Results'></form>";
+                    $("#" + Names.tableDivId).append(downloadFullResultForm);
                 }
-            }
+
+                function attachMagnitudeFilter(position) {
+                    //Add drop down filter for single/all pattern display
+                    $("#" + Names.tableDivId + position).find('.mutpat-table-filter-magnitude_' + position).append(
+                        "<select id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-" + position + "' style='width: 230px; margin-left: 5px;'>" +
+                        "<option value='all'>Show All</option>" +
+                        "<option value='singleMagnitude'>Show Only Single Genes</option>" +
+                        "<option value='multipleMagnitude'>Show Only Gene Patterns</option>" +
+                        "</select>");
+                    $("select#mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-" + position).change(function () {
+                        if ($(this).val() === "singleMagnitude") {
+                            mutPatTableInstance[position].fnFilter("1", 1, false, false);
+                        } else if ($(this).val() === "multipleMagnitude") {
+                            mutPatTableInstance[position].fnFilter('^(?!1$).*$', 1, true, false);
+                        } else if ($(this).val() === "all") {
+                            mutPatTableInstance[position].fnFilter("", 1);
+                        }
+                    });
+                }
+
+
+                function attachRowListener(position) {
+                    $("#" + Names.tableId + position + " tbody tr").live('click', function (event) {
+                        //Highlight selected row
+                        $.each(mutPatTableInstance, function (i, instance) {
+                            $(instance.fnSettings().aoData).each(function () {
+                                $(this.nTr).removeClass('row_selected');
+                            });
+                        });
+                        $(event.target.parentNode).addClass('row_selected');
+                        //Get the gene name of the selected row
+                        var aData = mutPatTableInstance[position].fnGetData(this);
+                        if (null !== aData) {
+                            var pattern = aData[0].replace(/\s+/, "").split(",");
+                            d3.select("#" + Names.plotId).selectAll('circle').each(
+                                function (d) {
+                                    var hasPattern = true;
+                                    var dot = d3.select(this);
+                                    $.each(pattern, function (i, obj) {
+                                        if (d.mutations.indexOf(obj.toString()) < 0) {
+                                            hasPattern = false;
+                                        }
+                                    });
+                                    if (hasPattern) {
+                                        dot.style("fill", "#F00");
+                                    } else {
+                                        dot.style("fill", "#BBB");
+                                    }
+                                }
+                            );
+                        }
+                    });
+                }
+
+                function initTable(position) {
+                    //Init with selecting the first row
+                    // $('#' + Names.tableId + position + ' tbody tr:eq(0)').click();
+                    // $('#' + Names.tableId + position + ' tbody tr:eq(0)').addClass("row_selected");
+                }
+
+                function attachMeanExpression(position, groups) {
+                    var means = $('#' + Names.plotId).data('means');
+                    if (position == "L") {
+                        $("#" + Names.tableDivId + "L").find('.mean_exp_L').append(
+                            "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-L' style='width: 230px; margin-left: 5px; margin-top: 5px;'>Mean Expression: " + means.xLow.toFixed(3) + "<br>Mean Count: " + means.yLow.toFixed(0) + "</label>");
+                    } else if (position == "R" && parseInt(groups) !== 1) {
+                        $("#" + Names.tableDivId + "R").find('.mean_exp_R').append(
+                            "<label id='mutpat-table-select-" + cbio.util.safeProperty(geneId) + "-R' style='width: 230px; margin-left: 5px; margin-top: 5px;'>Mean Expression: " + means.xHigh.toFixed(3) + "<br>Mean Count: " + means.yHigh.toFixed(0) + "</label>");
+                    }
+                }
+
+                //Overwrite some datatable function for custom filtering
+                function overWriteFilters() {
+                    jQuery.fn.dataTableExt.oSort['mutpat-absolute-value-desc'] = function (a, b) {
+                        if (isNaN(a)) return -1;
+                        else if (isNaN(b)) return 1;
+                        else if (Math.abs(a) > Math.abs(b)) return -1;
+                        else if (Math.abs(a) < Math.abs(b)) return 1;
+                        else return 0;
+                    };
+                    jQuery.fn.dataTableExt.oSort['mutpat-absolute-value-asc'] = function (a, b) {
+                        if (isNaN(a)) return 1;
+                        else if (isNaN(b)) return -1;
+                        else if (Math.abs(a) > Math.abs(b)) return 1;
+                        else if (Math.abs(a) < Math.abs(b)) return -1;
+                        else return 0;
+                    };
+                }
+
+                function convertData(_result, _groups) {
+                    // Get ID for table
+                    var id = 0;
+                    if (position === "R") {
+                        if (_groups === 0) {
+                            id = 2;
+                        } else {
+                            id = _groups - 1;
+                        }
+                    }
+
+                    //Convert the format of the callback result to fit datatable
+                    mutpatTableArr = [];
+                    $.each(_result[id], function (i, obj) {
+                        var tmp_arr = [];
+                        tmp_arr.push(obj.pattern);
+                        tmp_arr.push(obj.magnitude);
+                        tmp_arr.push(obj.support.toFixed(3));
+                        if (isNaN(obj.supportOther)) tmp_arr.push(obj.supportOther);
+                        else tmp_arr.push(obj.supportOther.toFixed(3));
+                        mutpatTableArr.push(tmp_arr);
+                    });
+                }
+
+
+                return {
+                    init: function (result, groups) {
+                        //Hide the loading img
+                        groups = parseInt(groups);
+                        $("#" + Names.loadingImgId).empty();
+                        if (result.length === 0) {
+                            var sup = $("#mutpat-support-selector :selected").val();
+                            $("#" + Names.tableDivId + position).append("There are no alteration patterns with an support of " + sup + " or higher.");
+                            attachDownloadFullResultButton();
+                        } else if (position === "R" && groups === 1) {
+                            $("#" + Names.tableDivId + position).append("There is only one group to display.");
+                        } else {
+                            //Render datatable
+                            convertData(result, groups);
+                            overWriteFilters();
+                            configTable(position);
+                            if (position === "L") {
+                                attachDownloadFullResultButton();
+                            }
+                            attachMagnitudeFilter(position);
+                            attachRowListener(position);
+                            attachMeanExpression(position, groups);
+                            initTable();
+                        }
+                    }
+                };
+
+            }; //Closing MutPatTable
 
             return {
-                init: function(_geneId) {
+                init: function (_geneId) {
                     //Getting co-exp data (for currently selected gene/profile) from servlet
                     // $("#" + Names.plotId).empty();
                     var paramsGetMutPatData = {
-                         cancer_study_id: window.QuerySession.getCancerStudyIds()[0],
-                         gene: _geneId,
-                         profile_id: $("#mutpat-profile-selector :selected").val(),
-                         alteration_profile_id: $("#mutpat-alteration-profile-selector :selected").val(),
-                         groups: $("#mutpat-groups-selector :selected").val(),
-                         support: $("#mutpat-support-selector :selected").val(),
-                         zscore_threshold: window.QuerySession.getZScoreThreshold(),
-                         case_set_id: window.QuerySession.getCaseSetId(),
-                         case_ids_key: window.QuerySession.getCaseIdsKey(),
-                         is_download: "false",
-                         get_patterns: "true"
+                        cancer_study_id: window.QuerySession.getCancerStudyIds()[0],
+                        gene: _geneId,
+                        profile_id: $("#mutpat-profile-selector :selected").val(),
+                        alteration_profile_id: $("#mutpat-alteration-profile-selector :selected").val(),
+                        groups: $("#mutpat-groups-selector :selected").val(),
+                        support: $("#mutpat-support-selector :selected").val(),
+                        zscore_threshold: window.QuerySession.getZScoreThreshold(),
+                        case_set_id: window.QuerySession.getCaseSetId(),
+                        case_ids_key: window.QuerySession.getCaseIdsKey(),
+                        is_download: "false",
+                        get_patterns: "true"
                     };
                     $.post(
-                        "getMutPat.do", 
-                        paramsGetMutPatData, 
-                        function(result) {
-                            getMutPatDataCallBack(result, parseInt(paramsGetMutPatData.groups));
+                        "getMutPat.do",
+                        paramsGetMutPatData,
+                        function (result) {
+                            var groups =  $("#mutpat-groups-selector :selected").val();
+                            var mutPatTableLeft = new MutPatTable("L");
+                            mutPatTableLeft.init(result, groups);
+                            var mutPatTableRight = new MutPatTable("R");
+                            mutPatTableRight.init(result, groups);
+                            // getMutPatDataCallBack(result, parseInt(paramsGetMutPatData.groups));
                         },
                         "json"
                     );
                 }
-            };          
+            };
             
-        }; //Closing MutPatTable
+        }; //Closing MutPatTables
         
         var MutPatPlot = function() {
     
@@ -1002,10 +1014,8 @@ var MutPatView = (function() {
                 if (element.length === 0) { //Avoid duplication (see if the subtab instance already exists)
                     assembleNames();
                     drawLayout();
-                    var mutPatTableLeft = new MutPatTable("L");
-                    mutPatTableLeft.init(geneId);
-                    var mutPatTableRight = new MutPatTable("R");
-                    mutPatTableRight.init(geneId);
+                    var mutPatTables = new MutPatTables();
+                    mutPatTables.init(geneId);
                     var mutPatPlot = new MutPatPlot();
                     mutPatPlot.init(geneId);
                 }
