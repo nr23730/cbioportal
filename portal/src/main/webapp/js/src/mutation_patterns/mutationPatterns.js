@@ -188,7 +188,8 @@ var MutPatView = (function() {
 
         function filterProfiles(_alterationProfileList) {
             $.each(_alterationProfileList, function(i, obj) {
-                if (obj["GENETIC_ALTERATION_TYPE"] === "COPY_NUMBER_ALTERATION" && obj["DATATYPE"] === "DISCRETE") {
+                var sampleCount = window.QuerySession.getSampleIds().length;
+                if (sampleCount > 250 && obj["GENETIC_ALTERATION_TYPE"] === "COPY_NUMBER_ALTERATION" && obj["DATATYPE"] === "DISCRETE") {
                     alterationProfileList.push(obj);
                 } else if (obj["GENETIC_ALTERATION_TYPE"] === "MUTATION_EXTENDED") {
                     alterationProfileList.push(obj);
@@ -823,6 +824,7 @@ var MutPatView = (function() {
             }
 
             function getDataCallBack(result, groups) {
+                $("#" + Prefix.plotPrefix + cbio.util.safeProperty(value)).empty();
                 
                 convertData(result, groups);
                 // attachMeanExpression(groups);

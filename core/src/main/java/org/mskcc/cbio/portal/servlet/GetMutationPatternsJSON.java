@@ -290,7 +290,7 @@ public class GetMutationPatternsJSON extends HttpServlet {
     }
     
     private boolean isTimeout(long startTime) {
-        long timeOut = 120 * 1000;
+        long timeOut = 180 * 1000;
         if(System.currentTimeMillis() - startTime > timeOut) return true;
         else return false;
     }
