@@ -1083,12 +1083,12 @@ var MutPatView = (function() {
     function getGeneticProfileCallback(result) {
         var _genes = window.QuerySession.getQueryGenes();
         //Init Profile selector
-        var _profile_list = {};
-        _.each(_genes, function(_gene) {
-            _profile_list = _.extend(_profile_list, result[_gene]);
-        });
-        ProfileSelector.init(_profile_list);
-        AlterationProfileSelector.init(_profile_list);
+        // var _profile_list = {};
+        // _.each(_genes, function(_gene) {
+        //     _profile_list = _.extend(_profile_list, result[_gene]);
+        // });
+        ProfileSelector.init(result);
+        AlterationProfileSelector.init(result);
         GroupsSelector.init();
         SupportSelector.init();
         // if (profileList.length === 1) {
