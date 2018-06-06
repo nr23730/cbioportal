@@ -1107,10 +1107,10 @@ var MutPatView = (function() {
             Tabs.bindListenerToTabs();
             //Get all the genetic profiles with data available 
             var paramsGetProfiles = {
-                cancer_study_id: window.QuerySession.getCancerStudyIds()[0],
-                case_set_id: window.QuerySession.getCaseSetId(),
-                case_ids_key: window.QuerySession.getCaseIdsKey(),
-                gene_list: window.QuerySession.getQueryGenes().join(" ")
+                cancer_study_id: window.QuerySession.getCancerStudyIds()[0]
+                // case_set_id: window.QuerySession.getCaseSetId(),
+                // case_ids_key: window.QuerySession.getCaseIdsKey(),
+                // gene_list: window.QuerySession.getQueryGenes().join(" ")
             };
             $.post("getGeneticProfile.json", paramsGetProfiles, getGeneticProfileCallback, "json");
         },
