@@ -830,12 +830,7 @@ var MutPatView = (function() {
                 var xMin = Math.ceil(Math.abs(d3.min(d, function(d) {return d.x;}))),
                     xMax = Math.ceil(Math.abs(d3.max(d, function(d) {return d.x;})));
 
-                if(xMin < xMax) {
-                    xMin = -xMax;
-                } else {
-                    xMax = xMin;
-                    xMin = -xMin;
-                }
+
                 
                 // var xRange = xMax-xMin,
                 //     paddingRange = 0.05,
@@ -843,30 +838,65 @@ var MutPatView = (function() {
                 
                 // xMin = xMin - paddingX;
                 // xMax = xMax + paddingX; 
-                
-                xScale = d3.scale.linear()
-                    .domain([
-                        xMin,
-                        xMax
-                    ])
-                    .range([margin.left, (svg_dx-margin.right)])
-                    .interpolate(easeInterpolate(d3.ease("exp-in-out")));
-                yScale = d3.scale.sqrt()
-                    .domain([
-                        0,
-                        d3.max(d, function(d) {return d.y;})
-                    ])
-                    .range([(svg_dy-margin.top), margin.bottom]);
+                var profile = (($("#mutpat-profile-selector :selected").val()).toString()).toLowerCase();
+                if(profile.includes("z-scores") || profile.includes("zscores")) {
+                    
+                    if(xMin < xMax) {
+                        xMin = -xMax;
+                    } else {
+                        xMax = xMin;
+                        xMin = -xMin;
+                    }
+                    
+                    xScale = d3.scale.linear()
+                        .domain([
+                            xMin,
+                            xMax
+                        ])
+                        .range([margin.left, (svg_dx-margin.right)])
+                        .interpolate(easeInterpolate(d3.ease("exp-in-out")));
+                    yScale = d3.scale.sqrt()
+                        .domain([
+                            0,
+                            d3.max(d, function(d) {return d.y;})
+                        ])
+                        .range([(svg_dy-margin.top), margin.bottom]);
 
-                // axes
-                var xAxisTicks = [xMin, xMin/5.0, xMin/10.0, xMin/20.0, xMin/50.0, 0, xMax/50.0, xMax/20.0, xMax/10.0, xMax/5.0, xMax];
-                var formatInteger = d3.format(",");
-                var formatDecimal = d3.format(",.2f");
-                function myFormat(number){
-                    return !(number % 1) ? formatInteger(number) : formatDecimal(number)
+                    // axes
+                    var xAxisTicks = [xMin, xMin/5.0, xMin/10.0, xMin/20.0, xMin/50.0, 0, xMax/50.0, xMax/20.0, xMax/10.0, xMax/5.0, xMax];
+                    var formatInteger = d3.format(",");
+                    var formatDecimal = d3.format(",.2f");
+                    function myFormat(number){
+                        return !(number % 1) ? formatInteger(number) : formatDecimal(number)
+                    }
+                    xAxis = d3.svg.axis().scale(xScale).orient("bottom").tickValues(xAxisTicks).tickFormat(myFormat).tickSize(1);
+                    yAxis = d3.svg.axis().scale(yScale).orient("left").tickSize(1);
+                } else {
+                    var xRange = xMax-xMin,
+                        paddingRange = 0.05,
+                        paddingX = xRange*paddingRange;
+
+                    xMin = xMin - paddingX;
+                    xMax = xMax + paddingX;
+
+                    xScale = d3.scale.linear()
+                        .domain([
+                            xMin,
+                            xMax
+                        ])
+                        .range([margin.left, (svg_dx-margin.right)]);
+                    yScale = d3.scale.sqrt()
+                        .domain([
+                            0,
+                            d3.max(d, function(d) {return d.y;})
+                        ])
+                        .range([(svg_dy-margin.top), margin.bottom]);
+
+                    xAxis = d3.svg.axis().scale(xScale).orient("bottom").tickSize(1);
+                    yAxis = d3.svg.axis().scale(yScale).orient("left").tickSize(1);
                 }
-                xAxis = d3.svg.axis().scale(xScale).orient("bottom").tickValues(xAxisTicks).tickFormat(myFormat).tickSize(1);
-                yAxis = d3.svg.axis().scale(yScale).orient("left").tickSize(1);
+
+
                 
                 // init
                 svg = d3.select("#" + Names.plotId)
