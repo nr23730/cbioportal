@@ -824,7 +824,6 @@ var MutPatView = (function() {
             }
 
             function getDataCallBack(result, groups) {
-                $("#" + Prefix.plotPrefix + cbio.util.safeProperty(value)).empty();
                 
                 convertData(result, groups);
                 // attachMeanExpression(groups);
