@@ -35,6 +35,7 @@ package org.mskcc.cbio.portal.servlet;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
+import org.apache.spark.ml.util.Stopwatch;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
@@ -200,6 +201,8 @@ public class GetMutationPatternsJSON extends HttpServlet {
             if (final_gp != null) {
                 try {
                     if (getPatterns) {
+                        long startTime = System.currentTimeMillis();
+                        
                         Map<Integer, Map<String,Set<String>>> map = MutPatUtil.getAlterationMaps(final_gp.getGeneticProfileId(), caseSetId, caseIdsKey, queryGeneId, groups, zScoreThreshold, mutation);
                         Map<Integer, Map<Set<String>, Double>> resultMaps = new HashMap<>();
                         if(groups == 0) {
@@ -208,12 +211,14 @@ public class GetMutationPatternsJSON extends HttpServlet {
                         for (Map.Entry<Integer, Map<String,Set<String>>> mutationMap: map.entrySet()) {
                             resultMaps.put(mutationMap.getKey(), new HashMap<>());
                             if(mutationMap.getKey() != 0 && mutationMap.getKey() != (groups-1)) {
+                                if(isTimeout(startTime)) return; // Checking tiemout
                                 continue;
                                 // Increase Performance
                                 // right now only the first and last group get used as a result so we don't have to calculate all other groups
                             }
                             List<List<String>> transactions = new ArrayList<>();
                             for (Map.Entry<String, Set<String>> entry: mutationMap.getValue().entrySet()) {
+                                if(isTimeout(startTime)) return; // Checking tiemout
                                 transactions.add(new ArrayList<>(entry.getValue()));
                             }
 
@@ -222,16 +227,19 @@ public class GetMutationPatternsJSON extends HttpServlet {
                             FPGrowthModel<String> fpgModel = fpg.run(rdd);
 
                             for (FPGrowth.FreqItemset<String> itemset: fpgModel.freqItemsets().toJavaRDD().collect()) {
+                                if(isTimeout(startTime)) return; // Checking tiemout
                                 resultMaps.get(mutationMap.getKey()).put(new HashSet<>(itemset.javaItems()), (double)itemset.freq()/(double)transactions.size());
                             }
                         }
                         for (Map.Entry<Integer, Map<Set<String>, Double>> resultMap: resultMaps.entrySet()) {
+                            if(isTimeout(startTime)) return; // Checking tiemout
                             ArrayNode arrayNode = mapper.createArrayNode();
                             int group = resultMap.getKey();
                             int otherGroup = 0;
 
                             if(group == 0) otherGroup = groups - 1;
                             for (Map.Entry<Set<String>, Double> pattern: resultMap.getValue().entrySet()) {
+                                if(isTimeout(startTime)) return; // Checking tiemout
                                 ObjectNode _scores = mapper.createObjectNode();
                                 if(groups != 1) {
                                     double support = pattern.getValue();
@@ -279,6 +287,12 @@ public class GetMutationPatternsJSON extends HttpServlet {
             }
         }
 
+    }
+    
+    private boolean isTimeout(long startTime) {
+        long timeOut = 120 * 1000;
+        if(System.currentTimeMillis() - startTime > timeOut) return true;
+        else return false;
     }
     
     private boolean getBoolFromAlterationProfile(String alterationProfile) {

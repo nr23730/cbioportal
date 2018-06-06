@@ -603,9 +603,10 @@ var MutPatView = (function() {
                         groups = parseInt(groups);
                         $("#" + Names.loadingImgId).empty();
                         if (result.length === 0) {
-                            var sup = $("#mutpat-support-selector :selected").val();
-                            $("#" + Names.tableDivId + position).append("There are no alteration patterns with an support of " + sup + " or higher.");
-                            attachDownloadFullResultButton();
+                            if (position === "L") {
+                                $("#" + Names.tableDivId).append("Timeout in Backend. Aborted long lasting analysis.");
+                                attachDownloadFullResultButton();
+                            }
                         } else if (position === "R" && groups === 1) {
                             // $("#" + Names.tableDivId + position).append("There is only one group to display.");
                         } else {
