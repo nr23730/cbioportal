@@ -12,7 +12,7 @@
   <description>master maven module</description>
 
   <scm>
-    <developerConnection>scm:git:https://github.com/cBioPortal/cbioportal.git</developerConnection>
+    <developerConnection>scm:git:https://github.com/Unberath/cbioportal.git</developerConnection>
   </scm>
 
   <repositories>
@@ -278,8 +278,8 @@
   </profiles>
 
   <properties>
-    <frontend.version>v3.2.3</frontend.version>
-    <frontend.groupId>com.github.cbioportal</frontend.groupId>
+    <frontend.version>a77def5f375cbf58690bbc35ec9f42ddd73d2e21</frontend.version>
+    <frontend.groupId>com.github.Unberath</frontend.groupId>
     <slf4j.version>1.6.6</slf4j.version>
     <spring.version>4.3.14.RELEASE</spring.version>
     <spring.context.support.version>4.3.14.RELEASE</spring.context.support.version>
