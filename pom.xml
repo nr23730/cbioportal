@@ -278,7 +278,7 @@
   </profiles>
 
   <properties>
-    <frontend.version>a77def5f375cbf58690bbc35ec9f42ddd73d2e21</frontend.version>
+    <frontend.version>7f382ae7f7</frontend.version>
     <frontend.groupId>com.github.Unberath</frontend.groupId>
     <slf4j.version>1.6.6</slf4j.version>
     <spring.version>4.3.14.RELEASE</spring.version>
