@@ -278,7 +278,7 @@
   </profiles>
 
   <properties>
-    <frontend.version>5297442919359781348039e72a7f72da6fa53b2b</frontend.version>
+    <frontend.version>843fcec05eaa75ba544340848ab50546283c6b94</frontend.version>
     <frontend.groupId>com.github.nr23730</frontend.groupId>
     <slf4j.version>1.6.6</slf4j.version>
     <spring.version>4.3.14.RELEASE</spring.version>
