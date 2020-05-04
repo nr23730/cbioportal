@@ -278,7 +278,7 @@
   </profiles>
 
   <properties>
-    <frontend.version>833eb6d461479678b9b996ba4f8158c31d8cd2d4</frontend.version>
+    <frontend.version>release3.3.1-SNAPSHOT</frontend.version>
     <frontend.groupId>com.github.nr23730</frontend.groupId>
     <slf4j.version>1.6.6</slf4j.version>
     <spring.version>4.3.14.RELEASE</spring.version>
