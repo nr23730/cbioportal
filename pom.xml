@@ -278,7 +278,7 @@
   </profiles>
 
   <properties>
-    <frontend.version>release3.3.1-SNAPSHOT</frontend.version>
+    <frontend.version>release3.3.2-SNAPSHOT</frontend.version>
     <frontend.groupId>com.github.nr23730</frontend.groupId>
     <slf4j.version>1.6.6</slf4j.version>
     <spring.version>4.3.14.RELEASE</spring.version>
@@ -295,7 +295,7 @@
     <bundle.namespace>org.mskcc.mondrian</bundle.namespace>
     <timestamp>${maven.build.timestamp}</timestamp>
     <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
-    <jacoco-maven-plugin.version>0.7.6.201602180812</jacoco-maven-plugin.version>
+    <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
     <mockito.version>1.10.19</mockito.version>
 
     <final.war.name>cbioportal</final.war.name>
@@ -399,7 +399,7 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>5.1.47</version>
+      <version>5.1.48</version>
     </dependency>
     <!-- slf4j -->
     <dependency>

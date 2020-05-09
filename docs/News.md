@@ -1,3 +1,11 @@
+## May 6, 2020
+*   **Added data** consisting of 574 samples from 3 studies:
+     * [Uterine Sarcoma/Mesenchymal (MSK, Clin Cancer Res 2020)](https://www.cbioportal.org/study/summary?id=usarc_msk_2020) *108 samples* 
+     * [Metastatic castration-sensitive prostate cancer (MSK, Clin Cancer Res 2020)](https://www.cbioportal.org/study/summary?id=prad_mcspc_mskcc_2020) *424 samples* 
+    *  [Glioblastoma (Columbia, Nat Med. 2019)](https://www.cbioportal.org/study/summary?id=gbm_columbia_2019) *42 samples* 
+*   **Updated one study:**
+     *  Expression data was added to [The Metastatic Breast Cancer Project (Provisional, February 2020)](http://www.cbioportal.org/study?id=brca_mbcproject_wagle_2017).
+
 ## April 24, 2020
 * **New Feature**: Add a new chart on the _Study View_ for selecting samples based on pre-defined case lists: 
 
@@ -496,7 +504,7 @@ as appear in the url of a query submitted from the homepage.
 ## October 7, 2016
 *   **New features**:
     * All data sets can now be downloaded as flat files from the new [Data Hub](https://github.com/cBioPortal/datahub)
-    * Annotation of putative driver missense mutations in OncoPrints, based on [OncoKB](http://oncokb.org), mutation hotspots, and recurrence in cBioPortal and COSMIC
+    * Annotation of putative driver missense mutations in OncoPrints, based on [OncoKB](https://www.oncokb.org), mutation hotspots, and recurrence in cBioPortal and COSMIC
     
     ![OncoPrint-OncoKB](https://cloud.githubusercontent.com/assets/840895/19208804/094dd320-8ccd-11e6-8012-f30104b62ff4.png)
     
@@ -539,7 +547,7 @@ as appear in the url of a query submitted from the homepage.
 
 ## June 6, 2016
 *   **New features**:
-    * Annotation of mutation effect and drug sensitivity on the Mutations tab and the patient view pages (via [OncoKB](http://oncokb.org))  
+    * Annotation of mutation effect and drug sensitivity on the Mutations tab and the patient view pages (via [OncoKB](https://www.oncokb.org))  
     ![oncokb-screenshot](https://cloud.githubusercontent.com/assets/840895/15825344/54bbbc44-2bd1-11e6-8b65-e265e03f453a.png)
 *   **Improvements**:
     * Improved OncoPrint visualization using WebGL: faster, more zooming flexibility, visualization of recurrent variants
