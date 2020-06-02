@@ -84,6 +84,8 @@ def get_portal_properties(properties_filename):
                     file=ERROR_FILE)
                 continue
             properties[name] = value.strip()
+    if os.environ.get('DB_PASSWORD') is not None:
+        properties[DATABASE_PW] = os.environ.get('DB_PASSWORD')
     missing_properties = []
     for required_property in REQUIRED_PROPERTIES:
         if required_property not in properties or len(properties[required_property]) == 0:
