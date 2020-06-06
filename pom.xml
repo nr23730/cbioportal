@@ -286,7 +286,7 @@
   </profiles>
 
   <properties>
-    <frontend.version>release3.3.7-SNAPSHOT</frontend.version>
+    <frontend.version>release3.4.0-SNAPSHOT</frontend.version>
     <frontend.groupId>com.github.nr23730</frontend.groupId>
     <slf4j.version>1.7.30</slf4j.version>
     <spring.version>5.2.6.RELEASE</spring.version>
@@ -319,7 +319,7 @@
     <tomcat.session.timeout>720</tomcat.session.timeout>
 
     <!-- THIS SHOULD BE KEPT IN SYNC TO VERSION IN CGDS.SQL -->
-    <db.version>2.12.4</db.version>
+    <db.version>2.12.6</db.version>
   </properties>
 
   <modules>
