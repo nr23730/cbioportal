@@ -525,6 +525,10 @@ def main(args):
     jvm_args = "-Dspring.profiles.active=dbcp -cp " + args.jar_path
     study_directory = args.study_directory
 
+    # insert database password from env variable
+    if os.environ.get('DB_PASSWORD') is not None:
+        jvm_args = "-Ddb.password=" + os.environ.get('DB_PASSWORD') + " " + jvm_args
+
     # check if DB version and application version are in sync
     check_version(jvm_args)
 
