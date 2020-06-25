@@ -1,0 +1,29 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: core
+
+on:
+  push:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: mirromutth/mysql-action@v1.1
+      with:
+        character set server: 'latin1'
+        collation server: 'latin1_swedish_ci'
+        mysql version: '5.7'
+        mysql database: 'cgds_test'
+        mysql user: 'cbio_user'
+        mysql password: 'somepassword'
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11
+    - name: Build with Maven
+      run: mvn -B -e -U -Ppublic -Dauthenticate=false -Dfinal.war.name=cbioportal clean install integration-test --file pom.xml
