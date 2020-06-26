@@ -17,7 +17,6 @@ jobs:
       with:
         character set server: 'latin1'
         collation server: 'latin1_swedish_ci'
-        mysql version: '5.7'
         mysql database: 'cgds_test'
         mysql user: 'cbio_user'
         mysql password: 'somepassword'
