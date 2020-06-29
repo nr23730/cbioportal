@@ -13,11 +13,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: mirromutth/mysql-action@v1.1
+    - uses: getong/mariadb-action@v1.1
       with:
         character set server: 'latin1'
         collation server: 'latin1_swedish_ci'
-        mysql version: '5.7'
         mysql database: 'cgds_test'
         mysql user: 'cbio_user'
         mysql password: 'somepassword'
