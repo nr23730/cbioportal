@@ -286,7 +286,7 @@
   </profiles>
 
   <properties>
-    <frontend.version>release3.4.1-SNAPSHOT</frontend.version>
+    <frontend.version>release3.4.2-SNAPSHOT</frontend.version>
     <frontend.groupId>com.github.nr23730</frontend.groupId>
     <slf4j.version>1.7.30</slf4j.version>
     <spring.version>5.2.6.RELEASE</spring.version>
@@ -325,7 +325,6 @@
   <modules>
     <module>portal</module>
     <module>core</module>
-    <module>business</module>
     <module>web</module>
     <module>model</module>
     <module>persistence</module>
