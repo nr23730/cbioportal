@@ -187,6 +187,9 @@ show.civic=false
 # Link to My Cancer Genome. Please disable (set to false) when using cBioPortal with patient identifiable data due My Cancer Genome license restrictions.
 mycancergenome.show=true
 
+# Enable transcript switch dropdown (true, false)
+# show.transcript_dropdown=false
+
 # igv bam linking
 igv.bam.linking=
 # colon delimited
@@ -209,9 +212,6 @@ google_analytics_profile_id=
 
 # genomespace linking
 genomespace=true
-
-# set this to true if you update cancer studies in your production database without shutting the web server
-recache_study_after_update=false
 
 # session-service url: http://[host]:[port]/[session_service_app]/api/sessions/[portal_instance]/
 # example session-service url: http://localhost:8080/session_service/api/sessions/public_portal/
